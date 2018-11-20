@@ -3,6 +3,7 @@ package com.dayannn.RSOI2.booksservice.controller;
 import com.dayannn.RSOI2.booksservice.entity.Book;
 import com.dayannn.RSOI2.booksservice.entity.BookInfo;
 import com.dayannn.RSOI2.booksservice.repository.BooksRepository;
+import com.dayannn.RSOI2.booksservice.service.BooksService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,21 +13,21 @@ import java.util.List;
 
 @RestController
 public class BooksServiceController {
+    private final BooksService booksService;
 
     @Autowired
-    private BooksRepository booksRepository;
+    BooksServiceController(BooksService booksService){
+        this.booksService = booksService;
+    }
 
     @PostMapping(value = "/books")
-    public ResponseEntity<Void> createBook(@RequestBody Book book){
-        booksRepository.save(book);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public void createBook(@RequestBody Book book){
+        booksService.createBook(book);
     }
 
     @GetMapping(value = "/books")
-    public ResponseEntity<List<Book>> getAllBooks(){
-        List<Book> books = booksRepository.findAll();
-
-        return new ResponseEntity<List<Book>>(books, HttpStatus.OK);
+    public List<Book> getAllBooks(){
+        return booksService.getAllBooks();
     }
 
 }
