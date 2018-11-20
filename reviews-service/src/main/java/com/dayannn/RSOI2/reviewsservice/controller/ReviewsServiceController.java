@@ -19,12 +19,12 @@ public class ReviewsServiceController {
         this.reviewsService = reviewsService;
     }
 
-    @PostMapping(value = "/books")
+    @PostMapping(value = "/reviews")
     public void createBook(@RequestBody Review review){
         reviewsService.createReview(review);
     }
 
-    @GetMapping(value = "/books")
+    @GetMapping(value = "/reviews")
     public List<Review> getAllReviews(){
         return reviewsService.getAllReviews();
     }

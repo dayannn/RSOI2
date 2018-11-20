@@ -19,11 +19,11 @@ curl -X POST -i --header "Content-type: application/json" -d "{"name":"Chippolin
 
 Получить список всех отзывов
 ```
-curl -X GET "localhost:15151/reviews
+curl -X GET "localhost:15151/reviews"
 ```
 
 
 Добавить отзыв
 ```
-curl -X POST -i --header "Content-type: application/json" -d "{"TEXT":"Very good book", "UID":1, "BOOK_ID":2}" "localhost:15151/reviews"
+curl -X POST -i --header "Content-type: application/json" -d "{"text":"Very good book", "uid":1, "bookId":2}" "localhost:15151/reviews"
 ```
