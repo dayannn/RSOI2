@@ -1,7 +1,6 @@
 package com.dayannn.RSOI2.booksservice.controller;
 
 import com.dayannn.RSOI2.booksservice.entity.Book;
-import com.dayannn.RSOI2.booksservice.entity.BookInfo;
 import com.dayannn.RSOI2.booksservice.repository.BooksRepository;
 import com.dayannn.RSOI2.booksservice.service.BooksService;
 import org.springframework.beans.factory.annotation.Autowired;

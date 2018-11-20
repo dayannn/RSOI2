@@ -10,6 +10,8 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+   // TODO: add ISBN to entity
+
     @Column(name = "name")
     private String name;
 
