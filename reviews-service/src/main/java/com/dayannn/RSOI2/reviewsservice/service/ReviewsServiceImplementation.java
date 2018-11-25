@@ -9,7 +9,7 @@ import java.util.List;
 
 @Service
 public class ReviewsServiceImplementation implements ReviewsService {
-    private ReviewsRepository reviewsRepository;
+    private final ReviewsRepository reviewsRepository;
 
     @Autowired
     ReviewsServiceImplementation(ReviewsRepository reviewsRepository){

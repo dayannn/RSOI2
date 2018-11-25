@@ -1,22 +1,25 @@
 package com.dayannn.RSOI2.booksservice.entity;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import javax.persistence.*;
 
 
 @Entity
-@Table(name = "books")
+@Table(name = "BOOKS")
 public class Book {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
    // TODO: add ISBN to entity
 
-    @Column(name = "name")
+    @Column(name = "NAME")
     private String name;
 
-    @Column(name = "pages_num")
-    private int pages_num;
+    @Column(name = "PAGES_NUM")
+    private int pagesNum;
 
 
     public Long getId() {
@@ -31,12 +34,12 @@ public class Book {
         this.name = name;
     }
 
-    public int getPages_num() {
-        return pages_num;
+    public int getPagesNum() {
+        return pagesNum;
     }
 
-    public void setPages_num(int pages_num) {
-        this.pages_num = pages_num;
+    public void setPagesNum(int pagesNum) {
+        this.pagesNum = pagesNum;
     }
 
     @Override
@@ -47,8 +50,8 @@ public class Book {
 
         Book book = (Book) o;
 
-        return new org.apache.commons.lang3.builder.EqualsBuilder()
-                .append(pages_num, book.pages_num)
+        return new EqualsBuilder()
+                .append(pagesNum, book.pagesNum)
                 .append(id, book.id)
                 .append(name, book.name)
                 .isEquals();
@@ -56,10 +59,10 @@ public class Book {
 
     @Override
     public int hashCode() {
-        return new org.apache.commons.lang3.builder.HashCodeBuilder(17, 37)
+        return new HashCodeBuilder(17, 37)
                 .append(id)
                 .append(name)
-                .append(pages_num)
+                .append(pagesNum)
                 .toHashCode();
     }
 
@@ -68,7 +71,7 @@ public class Book {
         return "Book{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", pages_num=" + pages_num +
+                ", pagesNum=" + pagesNum +
                 '}';
     }
 }

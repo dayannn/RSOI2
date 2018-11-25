@@ -34,6 +34,8 @@ public class BooksServiceTest {
         Book book = new Book();
         book.setPages_num(42);
         book.setName("book");
+
+        booksRepository.save(book);
     }
 
     @Test
