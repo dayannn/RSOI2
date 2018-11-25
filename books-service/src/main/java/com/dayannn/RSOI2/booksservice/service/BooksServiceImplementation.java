@@ -12,7 +12,7 @@ public class BooksServiceImplementation implements BooksService {
     private final BooksRepository booksRepository;
 
     @Autowired
-    BooksServiceImplementation(BooksRepository booksRepository){
+    public BooksServiceImplementation(BooksRepository booksRepository){
         this.booksRepository = booksRepository;
     }
 
