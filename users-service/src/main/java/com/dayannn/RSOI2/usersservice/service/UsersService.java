@@ -10,11 +10,11 @@ public interface UsersService {
     User findUserByLogin(String login) throws UserNotFoundException;
     List<User> getAllUsers();
     void createUser(User user);
-    void deleteUser(Long id);
     void setRating(Long id, Integer rating) throws UserNotFoundException;
-    void increaseRating(Long id, Integer rating) throws UserNotFoundException;
-    void increaseRating(Long id) throws UserNotFoundException;
-    void decreaseRating(Long id, Integer rating) throws UserNotFoundException;
-    void decreaseRating(Long id) throws UserNotFoundException;
+//    void increaseRating(Long id, Integer rating) throws UserNotFoundException;
+//    void increaseRating(Long id) throws UserNotFoundException;
+//    void decreaseRating(Long id, Integer rating) throws UserNotFoundException;
+//    void decreaseRating(Long id) throws UserNotFoundException;
+    void setReviewsNum(Long id, int reviewsNum) throws UserNotFoundException;
 }
 

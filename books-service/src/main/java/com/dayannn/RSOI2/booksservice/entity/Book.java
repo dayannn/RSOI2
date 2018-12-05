@@ -21,6 +21,11 @@ public class Book {
     @Column(name = "PAGES_NUM")
     private int pagesNum;
 
+    @Column(name = "REVIEWS_NUM", columnDefinition = "int default 0")
+    private int reviewsNum;
+
+    @Column(name = "RATING", columnDefinition = "int default 0")
+    private int rating;
 
     public Long getId() {
         return id;
@@ -42,6 +47,22 @@ public class Book {
         this.pagesNum = pagesNum;
     }
 
+    public int getReviewsNum() {
+        return reviewsNum;
+    }
+
+    public void setReviewsNum(int reviewsNum) {
+        this.reviewsNum = reviewsNum;
+    }
+
+    public int getRating() {
+        return rating;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -52,6 +73,8 @@ public class Book {
 
         return new EqualsBuilder()
                 .append(pagesNum, book.pagesNum)
+                .append(reviewsNum, book.reviewsNum)
+                .append(rating, book.rating)
                 .append(id, book.id)
                 .append(name, book.name)
                 .isEquals();
@@ -63,6 +86,8 @@ public class Book {
                 .append(id)
                 .append(name)
                 .append(pagesNum)
+                .append(reviewsNum)
+                .append(rating)
                 .toHashCode();
     }
 
@@ -72,6 +97,8 @@ public class Book {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", pagesNum=" + pagesNum +
+                ", reviewsNum=" + reviewsNum +
+                ", rating=" + rating +
                 '}';
     }
 }

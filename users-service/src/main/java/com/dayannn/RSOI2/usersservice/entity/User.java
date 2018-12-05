@@ -11,19 +11,22 @@ import javax.validation.constraints.NotNull;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     @Column(name = "LOGIN", unique = true)
-    String login;
+    private String login;
 
     @Column(name = "NAME")
-    String name;
+    private String name;
 
     @Column(name = "LAST_NAME")
-    String lastName;
+    private String lastName;
 
-    @Column(name = "RATING")
-    int rating;
+    @Column(name = "RATING", columnDefinition = "int default 0")
+    private int rating;
+
+    @Column(name = "REVIEWS_NUM", columnDefinition = "int default 0")
+    private int reviewsNum;
 
     public Long getId() {
         return id;
@@ -61,6 +64,14 @@ public class User {
         this.rating = rating;
     }
 
+    public int getReviewsNum() {
+        return reviewsNum;
+    }
+
+    public void setReviewsNum(int reviewsNum) {
+        this.reviewsNum = reviewsNum;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -71,6 +82,7 @@ public class User {
 
         return new EqualsBuilder()
                 .append(rating, user.rating)
+                .append(reviewsNum, user.reviewsNum)
                 .append(id, user.id)
                 .append(login, user.login)
                 .append(name, user.name)
@@ -86,6 +98,7 @@ public class User {
                 .append(name)
                 .append(lastName)
                 .append(rating)
+                .append(reviewsNum)
                 .toHashCode();
     }
 
@@ -97,6 +110,7 @@ public class User {
                 ", name='" + name + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", rating=" + rating +
+                ", reviewsNum=" + reviewsNum +
                 '}';
     }
 }

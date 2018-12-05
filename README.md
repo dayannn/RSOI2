@@ -1,11 +1,11 @@
 # RSOI2
-![Travis-ci](https://travis-ci.org/dayannn/RSOI2.svg?branch=develop)
+[![Travis-ci](https://travis-ci.org/dayannn/RSOI2.svg?branch=develop)](https://travis-ci.org/dayannn/RSOI2)
 [![codecov](https://codecov.io/gh/dayannn/RSOI2/branch/develop/graph/badge.svg)](https://codecov.io/gh/dayannn/RSOI2)
 
 ### Настройка БД
 
-```postgresql
-psql -h localhost -U postgres
+```sql
+$psql -h localhost -U postgres
 CREATE database users_db;
 CREATE database books_db;
 CREATE database reviews_db;
@@ -16,6 +16,7 @@ GRANT ALL PRIVILEGES ON database reviews_db TO program;
 ALTER role program WITH login;
 /q
 ```
+___
 
 ### Запросы
 #### Сервис книг

@@ -6,6 +6,7 @@ import java.util.List;
 
 public interface ReviewsService {
     List<Review> getAllReviews();
-    void createReview(Review review);
-
+    Long createReview(Review review);
+    List<Review> getReviewsByUser(Long userId);
+    List<Review> getReviewsByBook(Long bookId);
 }

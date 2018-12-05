@@ -37,31 +37,26 @@ public class UsersServiceController {
         return usersService.findUserByLogin(login);
     }
 
-    @PostMapping(value = "users/{id}/upvote")
-    public void increaseUserRating(@PathVariable Long id,
-                                   @RequestParam(value = "points", required = false) Integer points)
-            throws UserNotFoundException {
-
-        if (points == null)
-            usersService.increaseRating(id);
-        else
-            usersService.increaseRating(id, points);
-    }
-
-    @PostMapping(value = "users/{id}/downvote")
-    public void decreaseUserRating(@PathVariable Long id,
-                                   @RequestParam(value = "points", required = false) Integer points)
-            throws UserNotFoundException {
-        if (points == null)
-            usersService.decreaseRating(id);
-        else
-            usersService.decreaseRating(id, points);
-    }
-
-    @PostMapping(value = "users/{id}/delete")
-    public void deleteUser(@PathVariable Long id){
-        usersService.deleteUser(id);
-    }
+//    @PostMapping(value = "users/{id}/upvote")
+//    public void increaseUserRating(@PathVariable Long id,
+//                                   @RequestParam(value = "points", required = false) Integer points)
+//            throws UserNotFoundException {
+//
+//        if (points == null)
+//            usersService.increaseRating(id);
+//        else
+//            usersService.increaseRating(id, points);
+//    }
+//
+//    @PostMapping(value = "users/{id}/downvote")
+//    public void decreaseUserRating(@PathVariable Long id,
+//                                   @RequestParam(value = "points", required = false) Integer points)
+//            throws UserNotFoundException {
+//        if (points == null)
+//            usersService.decreaseRating(id);
+//        else
+//            usersService.decreaseRating(id, points);
+//    }
 
     @PutMapping(value = "users/{id}/rating", consumes = "application/json")
     public void setUserRating(@PathVariable Long id, @RequestBody Integer points) throws UserNotFoundException {
