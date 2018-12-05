@@ -41,13 +41,13 @@ public class UsersServiceImplementation implements UsersService{
         usersRepository.save(user);
     }
 
-    @Override
-    public void setRating(Long id, Integer rating) throws UserNotFoundException{
-        User user = usersRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
-        user.setRating(rating);
-        usersRepository.save(user);
-    }
+//    @Override
+//    public void setRating(Long id, Integer rating) throws UserNotFoundException{
+//        User user = usersRepository.findById(id)
+//                .orElseThrow(() -> new UserNotFoundException(id));
+//        user.setRating(rating);
+//        usersRepository.save(user);
+//    }
 
 //    @Override
 //    public void increaseRating(Long id, Integer rating) throws UserNotFoundException{

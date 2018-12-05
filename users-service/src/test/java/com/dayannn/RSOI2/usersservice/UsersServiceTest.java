@@ -1,6 +1,7 @@
 package com.dayannn.RSOI2.usersservice;
 
 import com.dayannn.RSOI2.usersservice.entity.User;
+import com.dayannn.RSOI2.usersservice.exception.UserNotFoundException;
 import com.dayannn.RSOI2.usersservice.repository.UsersRepository;
 import com.dayannn.RSOI2.usersservice.service.UsersService;
 import com.dayannn.RSOI2.usersservice.service.UsersServiceImplementation;
@@ -10,6 +11,7 @@ import org.mockito.Mock;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -45,7 +47,7 @@ public class UsersServiceTest {
 
     @Test
     public void shouldCreateUser(){
-        User user= new User();
+        User user = new User();
         user.setRating(5);
         user.setLastName("Popovich");
         user.setName("Alesha");
@@ -56,5 +58,35 @@ public class UsersServiceTest {
         assertThat(usersRepository.save(user), is(user));
     }
 
+    @Test
+    public void shouldFindUserById() throws UserNotFoundException {
+        User user = new User();
+        user.setRating(5);
+        user.setLastName("Popovich");
+        user.setName("Alesha");
+        user.setLogin("alesha994");
+        user.setReviewsNum(4);
 
+        given(usersRepository.save(user)).willReturn(user);
+        given(usersRepository.findById(user.getId())).willReturn(Optional.of(user));
+
+        usersService.createUser(user);
+        assertThat(usersService.findUserById(user.getId()), is(user));
+    }
+
+    @Test
+    public void shouldFindUserByLogin() throws UserNotFoundException {
+        User user = new User();
+        user.setRating(5);
+        user.setLastName("Popovich");
+        user.setName("Alesha");
+        user.setLogin("alesha994");
+        user.setReviewsNum(4);
+
+        given(usersRepository.save(user)).willReturn(user);
+        given(usersRepository.findByLogin("alesha994")).willReturn(user);
+
+        usersService.createUser(user);
+        assertThat(usersService.findUserByLogin("alesha994"), is(user));
+    }
 }

@@ -58,10 +58,10 @@ public class UsersServiceController {
 //            usersService.decreaseRating(id, points);
 //    }
 
-    @PutMapping(value = "users/{id}/rating", consumes = "application/json")
-    public void setUserRating(@PathVariable Long id, @RequestBody Integer points) throws UserNotFoundException {
-        usersService.setRating(id, points);
-    }
+//    @PutMapping(value = "users/{id}/rating", consumes = "application/json")
+//    public void setUserRating(@PathVariable Long id, @RequestBody Integer points) throws UserNotFoundException {
+//        usersService.setRating(id, points);
+//    }
 
 
 }
