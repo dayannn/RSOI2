@@ -14,4 +14,5 @@ public interface GatewayService {
     String getReviewsByUser(@PathVariable Long userId) throws IOException;
     String getBooksWithReviews() throws IOException, JSONException;
     void createReview(@RequestBody String review) throws IOException;
+    void deleteReview(Long reviewId) throws IOException;
 }

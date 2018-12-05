@@ -51,8 +51,11 @@ public class GatewayServiceController {
 
     @PostMapping(value = "/reviews")
     public void createReview(@RequestBody String review) throws IOException {
-        createReview(review);
+        gatewayService.createReview(review);
     }
 
-
+    @DeleteMapping(value = "/reviews/{reviewId}")
+    public void deleteReview(@PathVariable Long reviewId) throws IOException {
+        gatewayService.deleteReview(reviewId);
+    }
 }

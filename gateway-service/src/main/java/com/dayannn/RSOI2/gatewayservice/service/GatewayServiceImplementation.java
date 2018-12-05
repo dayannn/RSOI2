@@ -1,6 +1,7 @@
 package com.dayannn.RSOI2.gatewayservice.service;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -141,6 +142,38 @@ public class GatewayServiceImplementation implements GatewayService {
             Long bookId = obj.getLong("bookId");
             request = new HttpPost(booksServiceUrl + "/books/" + bookId + "/add_review");
             response = httpClient.execute(request);
+        } catch (Exception ex) {
+            // обработка исключения
+        } finally {
+            httpClient.close();
+        }
+    }
+
+    @Override
+    public void deleteReview(Long reviewId) throws IOException {
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        try{
+            String url = reviewsServiceUrl + "/reviews/" + reviewId;
+            URL website = new URL(url);
+            URLConnection connection = website.openConnection();
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF8"));
+
+
+            StringBuilder book = new StringBuilder();
+            String inputLine;
+
+            while ((inputLine = in.readLine()) != null)
+                book.append(inputLine);
+            in.close();
+            JSONObject obj = new JSONObject(book.toString());
+            Long bookId = obj.getLong("bookId");
+
+
+            HttpDelete request = new HttpDelete(reviewsServiceUrl + "/reviews/" + reviewId);
+            HttpResponse response = httpClient.execute(request);
+
+            HttpPost request2 = new HttpPost(booksServiceUrl + "/books/" + bookId + "/delete_review");
+            response = httpClient.execute(request2);
         } catch (Exception ex) {
             // обработка исключения
         } finally {

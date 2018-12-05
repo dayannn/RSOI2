@@ -51,4 +51,12 @@ public class BooksServiceImplementation implements BooksService {
         book.setReviewsNum(book.getReviewsNum() + 1);
         booksRepository.save(book);
     }
+
+    @Override
+    public void deleteReview(Long id) throws BookNotFoundException {
+        Book book = booksRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException(id));
+        book.setReviewsNum(book.getReviewsNum() - 1);
+        booksRepository.save(book);
+    }
 }
