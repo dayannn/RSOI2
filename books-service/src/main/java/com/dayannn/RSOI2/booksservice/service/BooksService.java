@@ -12,4 +12,5 @@ public interface BooksService {
     int getReviewsNum(Long id) throws BookNotFoundException;
     void addReview(Long id) throws BookNotFoundException;
     void deleteReview(Long id) throws BookNotFoundException;
+    void setRating(Long id, double rating) throws BookNotFoundException;
 }

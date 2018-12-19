@@ -2,6 +2,7 @@ package com.dayannn.RSOI2.gatewayservice.service;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -142,6 +143,19 @@ public class GatewayServiceImplementation implements GatewayService {
             Long bookId = obj.getLong("bookId");
             request = new HttpPost(booksServiceUrl + "/books/" + bookId + "/add_review");
             response = httpClient.execute(request);
+
+            HttpGet request2 = new HttpGet(reviewsServiceUrl + "/reviews/bybook/" + bookId);
+            HttpResponse response2 = httpClient.execute(request2);
+            String responseString2 = EntityUtils.toString(response2.getEntity(), "UTF-8");
+            JSONArray revsArray = new JSONArray(responseString2);
+            double rating = 0;
+            for (int i = 0; i < revsArray.length(); i++){
+                rating += revsArray.getJSONObject(i).getDouble("rating");
+            }
+            double averageRating = rating/revsArray.length();
+
+            HttpPost request3 = new HttpPost(booksServiceUrl + "/books/" + bookId +"/setRating/" + String.valueOf(averageRating));
+            HttpResponse response3 = httpClient.execute(request3);
         } catch (Exception ex) {
             // обработка исключения
         } finally {
@@ -172,8 +186,21 @@ public class GatewayServiceImplementation implements GatewayService {
             HttpDelete request = new HttpDelete(reviewsServiceUrl + "/reviews/" + reviewId);
             HttpResponse response = httpClient.execute(request);
 
-            HttpPost request2 = new HttpPost(booksServiceUrl + "/books/" + bookId + "/delete_review");
-            response = httpClient.execute(request2);
+            HttpPost request3 = new HttpPost(booksServiceUrl + "/books/" + bookId + "/delete_review");
+            response = httpClient.execute(request3);
+
+            HttpGet request2 = new HttpGet(reviewsServiceUrl + "/reviews/bybook/" + bookId);
+            HttpResponse response2 = httpClient.execute(request2);
+            String responseString2 = EntityUtils.toString(response2.getEntity(), "UTF-8");
+            JSONArray revsArray = new JSONArray(responseString2);
+            double rating = 0;
+            for (int i = 0; i < revsArray.length(); i++){
+                rating += revsArray.getJSONObject(i).getDouble("rating");
+            }
+            double averageRating = rating/revsArray.length();
+
+            HttpPost request4 = new HttpPost(booksServiceUrl + "/books/" + bookId +"/setRating/" + averageRating);
+            HttpResponse response4 = httpClient.execute(request4);
         } catch (Exception ex) {
             // обработка исключения
         } finally {

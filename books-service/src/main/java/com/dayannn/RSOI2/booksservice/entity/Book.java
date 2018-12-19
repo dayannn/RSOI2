@@ -24,8 +24,8 @@ public class Book {
     @Column(name = "REVIEWS_NUM", columnDefinition = "int default 0")
     private int reviewsNum;
 
-    @Column(name = "RATING", columnDefinition = "int default 0")
-    private int rating;
+    @Column(name = "RATING", columnDefinition = "double precision default 0.0")
+    private double rating;
 
     public Long getId() {
         return id;
@@ -55,11 +55,11 @@ public class Book {
         this.reviewsNum = reviewsNum;
     }
 
-    public int getRating() {
+    public double getRating() {
         return rating;
     }
 
-    public void setRating(int rating) {
+    public void setRating(double rating) {
         this.rating = rating;
     }
 

@@ -36,4 +36,9 @@ public class BooksServiceController {
     public void deleteReview(@PathVariable Long id) throws BookNotFoundException {
         booksService.deleteReview(id);
     }
+
+    @PostMapping(value = "books/{id}/setRating/{rating}")
+    public void setRating(@PathVariable Long id, @PathVariable double rating) throws BookNotFoundException{
+        booksService.setRating(id, rating);
+    }
 }

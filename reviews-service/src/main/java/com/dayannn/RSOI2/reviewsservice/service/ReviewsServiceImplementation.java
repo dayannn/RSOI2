@@ -1,6 +1,7 @@
 package com.dayannn.RSOI2.reviewsservice.service;
 
 import com.dayannn.RSOI2.reviewsservice.entity.Review;
+import com.dayannn.RSOI2.reviewsservice.exeption.ReviewNotFoundException;
 import com.dayannn.RSOI2.reviewsservice.repository.ReviewsRepository;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,4 +41,18 @@ public class ReviewsServiceImplementation implements ReviewsService {
         return reviews;
     }
 
+    @Override
+    public void deleteReviewsByBook(Long bookId) {
+        reviewsRepository.deleteAllByBookId(bookId);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        reviewsRepository.deleteById(id);
+    }
+
+    @Override
+    public Review getReviewById(Long id) throws ReviewNotFoundException {
+        return reviewsRepository.findById(id).orElseThrow(() -> new ReviewNotFoundException(id));
+    }
 }

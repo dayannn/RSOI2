@@ -20,6 +20,9 @@ public class Review {
     @Column(name="BOOK_ID")
     private Long bookId;
 
+    @Column(name="RATING", columnDefinition = "double precision default 5.0")
+    private double rating;
+
     public Long getId() {
         return id;
     }
@@ -48,6 +51,14 @@ public class Review {
         this.bookId = bookId;
     }
 
+    public double getRating() {
+        return rating;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -57,6 +68,7 @@ public class Review {
         Review review = (Review) o;
 
         return new EqualsBuilder()
+                .append(rating, review.rating)
                 .append(id, review.id)
                 .append(text, review.text)
                 .append(uid, review.uid)
@@ -71,6 +83,7 @@ public class Review {
                 .append(text)
                 .append(uid)
                 .append(bookId)
+                .append(rating)
                 .toHashCode();
     }
 
@@ -81,6 +94,7 @@ public class Review {
                 ", text='" + text + '\'' +
                 ", uid=" + uid +
                 ", bookId=" + bookId +
+                ", rating=" + rating +
                 '}';
     }
 }
