@@ -1,61 +1,54 @@
 package com.dayannn.RSOI2.gatewayservice.controller;
 
 import com.dayannn.RSOI2.gatewayservice.service.GatewayService;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
-import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
+@Slf4j
 public class GatewayServiceController {
     private final GatewayService gatewayService;
+    private Logger logger;
 
     @Autowired
     public GatewayServiceController(GatewayService gatewayService){
+        logger = LoggerFactory.getLogger(GatewayServiceController.class);
         this.gatewayService = gatewayService;
     }
 
     @GetMapping(path = "users/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public String getUserById(@PathVariable Long userId) throws IOException {
+        logger.info("[GET] users/" +userId);
         return gatewayService.getUserById(userId);
     }
 
     @GetMapping(path = "/users/{userId}/reviews", produces = MediaType.APPLICATION_JSON_VALUE)
     public String getReviewsByUser(@PathVariable Long userId) throws IOException, JSONException {
+        logger.info("[GET] /users/" + userId + "/reviews");
         return gatewayService.getReviewsByUser(userId);
     }
 
     @GetMapping(path = "/books", produces = MediaType.APPLICATION_JSON_VALUE)
     public String getBooksWithReviews() throws IOException, JSONException {
+        logger.info("[GET] /books");
         return gatewayService.getBooksWithReviews();
     }
 
     @PostMapping(value = "/reviews")
     public void createReview(@RequestBody String review) throws IOException {
         gatewayService.createReview(review);
+        logger.info("[POST] /reviews ", "review: ", review);
     }
 
     @DeleteMapping(value = "/reviews/{reviewId}")
     public void deleteReview(@PathVariable Long reviewId) throws IOException {
         gatewayService.deleteReview(reviewId);
+        logger.info("[DELETE] /reviews/" + reviewId);
     }
 }
