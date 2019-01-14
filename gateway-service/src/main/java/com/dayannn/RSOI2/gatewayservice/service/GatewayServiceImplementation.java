@@ -32,20 +32,11 @@ public class GatewayServiceImplementation implements GatewayService {
 
     @Override
     public String getUserById(Long userId) throws IOException {
-        String url = usersServiceUrl + "/users" + "/" + userId;
-        URL website = new URL(url);
-        URLConnection connection = website.openConnection();
-        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        HttpGet request = new HttpGet(usersServiceUrl + "/users/" + userId);
+        HttpResponse response = httpClient.execute(request);
 
-        StringBuilder response = new StringBuilder();
-        String inputLine;
-
-        while ((inputLine = in.readLine()) != null)
-            response.append(inputLine);
-
-        in.close();
-
-        return response.toString();
+        return EntityUtils.toString(response.getEntity());
     }
 
 
