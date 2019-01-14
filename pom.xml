@@ -23,6 +23,7 @@
 		<module>gateway-service</module>
 		<module>reviews-service</module>
 		<module>users-service</module>
+		<module>frontend</module>
 	</modules>
 
 </project>
