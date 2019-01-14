@@ -1,6 +1,7 @@
 # RSOI2
-[![Travis-ci](https://travis-ci.org/dayannn/RSOI2.svg?branch=develop)](https://travis-ci.org/dayannn/RSOI2)
-[![codecov](https://codecov.io/gh/dayannn/RSOI2/branch/develop/graph/badge.svg)](https://codecov.io/gh/dayannn/RSOI2)
+## Лабораторные работы по РСОИ
+![Travis-ci](https://api.travis-ci.org/dayannn/RSOI2.svg)
+[![codecov](https://codecov.io/gh/dayannn/RSOI2/branch/master/graph/badge.svg)](https://codecov.io/gh/dayannn/RSOI2)
 
 ### Настройка БД
 
@@ -43,3 +44,4 @@ curl -X GET "localhost:15151/reviews"
 ```
 curl -X POST -i --header "Content-type: application/json" -d "{"text":"Very good book", "uid":1, "bookId":2}" "localhost:15151/reviews"
 ```
+
