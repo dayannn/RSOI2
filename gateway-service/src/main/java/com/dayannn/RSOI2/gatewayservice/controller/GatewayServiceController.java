@@ -12,6 +12,7 @@ import java.io.IOException;
 
 @RestController
 @Slf4j
+@RequestMapping("/api")
 public class GatewayServiceController {
     private final GatewayService gatewayService;
     private Logger logger;
