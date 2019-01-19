@@ -1,5 +1,5 @@
 <template>
-    <div class="users">
+    <div class="users" style="background: #eeeeee">
         <h1>Пользователи</h1>
         <b-button
                 v-b-toggle.collapse1 class="btn btn-info btn-sm" style="margin: 10px">Добавить пользователя</b-button>

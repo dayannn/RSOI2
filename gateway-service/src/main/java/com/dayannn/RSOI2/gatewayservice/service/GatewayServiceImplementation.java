@@ -96,7 +96,7 @@ public class GatewayServiceImplementation implements GatewayService {
 
         List<String> temp = new ArrayList<>();
         StringBuilder result = new StringBuilder();
-
+        result.append("[");
         for (int i = 0; i < books.length(); i++) {
             //get the JSON Object
             JSONObject obj = books.getJSONObject(i);
@@ -116,11 +116,13 @@ public class GatewayServiceImplementation implements GatewayService {
             in.close();
             reviews.append("\n");
             response.insert(response.length()-1, reviews);
+            if (i != books.length()-1)
+                response.append(",");
             //jsonObject = new JSONObject(response.toString());
 
             result.append(response);
         }
-
+        result.append("]");
         System.out.println();
 
         // RestTemplate

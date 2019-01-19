@@ -18,6 +18,13 @@ public class Book {
     @Column(name = "NAME")
     private String name;
 
+    @Column(name = "AUTHOR")
+    private String author;
+
+    @Lob
+    @Column(name = "DESCRIPTION", columnDefinition = "LONGTEXT")
+    private String description;
+
     @Column(name = "PAGES_NUM")
     private int pagesNum;
 
@@ -37,6 +44,22 @@ public class Book {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public int getPagesNum() {
@@ -77,6 +100,8 @@ public class Book {
                 .append(rating, book.rating)
                 .append(id, book.id)
                 .append(name, book.name)
+                .append(author, book.author)
+                .append(description, book.description)
                 .isEquals();
     }
 
@@ -85,6 +110,8 @@ public class Book {
         return new HashCodeBuilder(17, 37)
                 .append(id)
                 .append(name)
+                .append(author)
+                .append(description)
                 .append(pagesNum)
                 .append(reviewsNum)
                 .append(rating)
@@ -96,6 +123,8 @@ public class Book {
         return "Book{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", author='" + author + '\'' +
+                ", description='" + description + '\'' +
                 ", pagesNum=" + pagesNum +
                 ", reviewsNum=" + reviewsNum +
                 ", rating=" + rating +

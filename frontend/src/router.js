@@ -23,6 +23,16 @@ export default new Router({
       path: '/users',
       name: 'users',
       component: () => import('./views/Users.vue')
+    },
+    {
+        path: '/books',
+        name: 'books',
+        component: () => import('./views/Books.vue')
+    },
+    {
+        path: '/reviews',
+        name: 'reviews',
+        component: () => import('./views/Reviews.vue')
     }
   ]
 })

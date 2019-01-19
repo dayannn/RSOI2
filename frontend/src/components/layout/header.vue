@@ -6,6 +6,8 @@
             </router-link>
         </h1>
         <div class="header-right">
+            <router-link to="/books">Книги</router-link>
+            <router-link to="/reviews">Отзывы</router-link>
             <router-link to="/users">Пользователи</router-link>
             <router-link to="/about">О сайте</router-link>
         </div>
