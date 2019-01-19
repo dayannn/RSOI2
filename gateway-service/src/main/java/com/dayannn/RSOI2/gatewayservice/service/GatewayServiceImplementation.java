@@ -31,6 +31,15 @@ public class GatewayServiceImplementation implements GatewayService {
     final private String usersServiceUrl = "http://localhost:8072";
 
     @Override
+    public String getUsers() throws IOException{
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        HttpGet request = new HttpGet(usersServiceUrl + "/users/");
+        HttpResponse response = httpClient.execute(request);
+
+        return EntityUtils.toString(response.getEntity());
+    }
+
+    @Override
     public String getUserById(Long userId) throws IOException {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(usersServiceUrl + "/users/" + userId);
@@ -39,6 +48,12 @@ public class GatewayServiceImplementation implements GatewayService {
         return EntityUtils.toString(response.getEntity());
     }
 
+    @Override
+    public void deleteUser(Long userId) throws IOException{
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        HttpDelete request = new HttpDelete(usersServiceUrl + "/users/" + userId);
+        httpClient.execute(request);
+    }
 
     @Override
     public String getReviewsByUser(Long userId) throws IOException {
@@ -120,11 +135,22 @@ public class GatewayServiceImplementation implements GatewayService {
     }
 
     @Override
+    public void addUser(@RequestBody String user) throws IOException{
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        HttpPost request = new HttpPost(usersServiceUrl + "/users");
+        StringEntity params = new StringEntity(user);
+        request.addHeader("content-type", "application/json");
+        request.setEntity(params);
+        httpClient.execute(request);
+    }
+
+
+    @Override
     public void createReview(@RequestBody String review) throws IOException{
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         try{
             HttpPost request = new HttpPost(reviewsServiceUrl + "/reviews");
-            StringEntity params =new StringEntity(review);
+            StringEntity params = new StringEntity(review);
             request.addHeader("content-type", "application/json");
             request.setEntity(params);
             HttpResponse response = httpClient.execute(request);

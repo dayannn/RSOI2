@@ -23,6 +23,25 @@ public class GatewayServiceController {
         this.gatewayService = gatewayService;
     }
 
+    @GetMapping(path = "users", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String getUsers() throws IOException{
+        logger.info("[GET] users/");
+        return gatewayService.getUsers();
+    }
+
+    @DeleteMapping(path = "users/{userId}")
+    public void deleteUser(@PathVariable Long userId) throws IOException{
+        logger.info("[DELETE] users/" + userId);
+        gatewayService.deleteUser(userId);
+    }
+
+    @PostMapping(path = "users")
+    public void addUser(@RequestBody String user) throws IOException{
+        logger.info("[POST] /users\n ", user);
+        gatewayService.addUser(user);
+    }
+
+
     @GetMapping(path = "users/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public String getUserById(@PathVariable Long userId) throws IOException {
         logger.info("[GET] users/" +userId);

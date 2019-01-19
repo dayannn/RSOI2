@@ -47,6 +47,12 @@ public class UsersServiceController {
         return usersService.findUserByLogin(login);
     }
 
+    @DeleteMapping(value = "users/{id}")
+    public void deleteUserById(@PathVariable Long id){
+        logger.info("[DELETE] /users/" + id);
+        usersService.deleteUser(id);
+    }
+
 //    @PostMapping(value = "users/{id}/upvote")
 //    public void increaseUserRating(@PathVariable Long id,
 //                                   @RequestParam(value = "points", required = false) Integer points)
