@@ -33,6 +33,11 @@ export default new Router({
         path: '/reviews',
         name: 'reviews',
         component: () => import('./views/Reviews.vue')
+    },
+    {
+        path: '/book/:id',
+        name: 'book',
+        component: () => import('./views/Book.vue')
     }
   ]
 })

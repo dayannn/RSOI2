@@ -1,8 +1,8 @@
 <template>
-    <div class="users" style="background: #eeeeee">
+    <div class="users" >
         <h1>Пользователи</h1>
         <b-button
-                v-b-toggle.collapse1 class="btn btn-info btn-sm" style="margin: 10px">Добавить пользователя</b-button>
+                v-b-toggle.collapse1 class="btn btn-info btn-sm shadowed-button" style="margin: 10px">Добавить пользователя</b-button>
         <b-collapse id="collapse1" v-model="showCollapse" class="mt-2">
             <AddUserForm style="width: 50%; margin: auto"
                          v-on:hide-add-user-form="hideAddUserForm"
@@ -56,5 +56,10 @@
 </script>
 
 <style scoped>
-
+    .shadowed-button {
+        box-shadow: 0 4px 5px 0 rgba(0, 0, 0, .14), 0 1px 10px 0 rgba(0, 0, 0, .12), 0 2px 4px -1px rgba(0, 0, 0, .2)
+    }
+    .shadowed-button:hover{
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .14), 0 3px 1px -2px rgba(0, 0, 0, .2), 0 1px 5px 0 rgba(0, 0, 0, .12)
+    }
 </style>

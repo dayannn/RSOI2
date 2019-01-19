@@ -1,5 +1,5 @@
 <template>
-    <div class="header">
+    <div class="header" v-bind:class="{'active':scrolled}">
         <h1 >
             <router-link to="/" class="logo">
                 КнигоПоиск
@@ -16,7 +16,23 @@
 
 <script>
     export default{
-        name: "Header"
+        name: "Header",
+        data () {
+            return {
+                scrolled: false
+            };
+        },
+        methods: {
+            handleScroll () {
+                this.scrolled = window.scrollY > 0;
+            }
+        },
+        created () {
+            window.addEventListener('scroll', this.handleScroll);
+        },
+        destroyed () {
+            window.removeEventListener('scroll', this.handleScroll);
+        }
     }
 </script>
 
@@ -34,6 +50,14 @@
     .header{
         background: #444444;
         overflow: hidden;
+        position: fixed;
+        width: 100%;
+        z-index: 9000;
+        box-shadow: 0px 0px 6px rgba(0,0,0,.6);
+        transition: all 0.3s linear;
+    }
+    .active {
+        box-shadow: 0px 0px 8px rgba(0,0,0,.6);
     }
 
     /* Change the background color on mouse-over */

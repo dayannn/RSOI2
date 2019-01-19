@@ -1,5 +1,5 @@
 <template>
-    <div class="books" style="background: #eeeeee;">
+    <div class="books">
         <h1>Книги</h1>
         <div class="books-list" v-bind:key="book.id" v-for="book in books">
             <BookItem  v-bind:book="book"/>

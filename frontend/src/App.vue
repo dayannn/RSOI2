@@ -23,6 +23,7 @@
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #333;
-  margin-top: 5px;
+  background: #eeeeee;
+  min-height: 100vh;
 }
 </style>
