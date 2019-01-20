@@ -4,6 +4,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -12,6 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.io.BufferedReader;
@@ -20,6 +22,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +60,7 @@ public class GatewayServiceImplementation implements GatewayService {
 
     @Override
     public String getReviewsByUser(Long userId) throws IOException {
-        String url = reviewsServiceUrl + "/reviews/byuser" + "/" + userId;
+        String url = reviewsServiceUrl + "/reviews/byuser/" + userId;
         URL website = new URL(url);
         URLConnection connection = website.openConnection();
         BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
@@ -137,7 +140,7 @@ public class GatewayServiceImplementation implements GatewayService {
     }
 
     @Override
-    public void addUser(@RequestBody String user) throws IOException{
+    public void addUser(String user) throws IOException{
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         HttpPost request = new HttpPost(usersServiceUrl + "/users");
         StringEntity params = new StringEntity(user);
@@ -148,11 +151,11 @@ public class GatewayServiceImplementation implements GatewayService {
 
 
     @Override
-    public void createReview(@RequestBody String review) throws IOException{
+    public void createReview(String review) throws IOException{
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         try{
             HttpPost request = new HttpPost(reviewsServiceUrl + "/reviews");
-            StringEntity params = new StringEntity(review);
+            StringEntity params = new StringEntity(review, "UTF-8");
             request.addHeader("content-type", "application/json");
             request.setEntity(params);
             HttpResponse response = httpClient.execute(request);
@@ -226,4 +229,31 @@ public class GatewayServiceImplementation implements GatewayService {
             httpClient.close();
         }
     }
+
+    public String getReviewsForBook(Long bookId) throws IOException{
+        String url = reviewsServiceUrl + "/reviews/bybook/" + bookId;
+        URL website = new URL(url);
+        URLConnection connection = website.openConnection();
+        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+
+        StringBuilder response = new StringBuilder();
+        String inputLine;
+
+        while ((inputLine = in.readLine()) != null)
+            response.append(inputLine);
+
+        in.close();
+
+        return response.toString();
+    }
+
+    @Override
+    public String getBookById(@PathVariable Long bookId) throws IOException{
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        HttpGet request = new HttpGet(booksServiceUrl + "/book/" + bookId);
+        HttpResponse response = httpClient.execute(request);
+
+        return EntityUtils.toString(response.getEntity());
+    }
+
 }

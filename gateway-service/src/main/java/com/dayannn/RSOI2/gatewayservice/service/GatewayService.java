@@ -11,10 +11,12 @@ import java.io.IOException;
 public interface GatewayService {
     String getUsers() throws IOException;
     String getUserById(Long userId) throws IOException;
-    String getReviewsByUser(@PathVariable Long userId) throws IOException;
+    String getReviewsByUser(Long userId) throws IOException;
     String getBooksWithReviews() throws IOException, JSONException;
-    void addUser(@RequestBody String user) throws IOException;
-    void createReview(@RequestBody String review) throws IOException;
+    String getReviewsForBook(Long bookId) throws IOException;
+    String getBookById(Long bookId) throws IOException;
+    void addUser(String user) throws IOException;
+    void createReview(String review) throws IOException;
     void deleteReview(Long reviewId) throws IOException;
     void deleteUser(Long id) throws IOException;
 }

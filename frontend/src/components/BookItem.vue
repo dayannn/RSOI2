@@ -7,9 +7,8 @@
             <b-col class="card-block px-2" style="margin-left: 20px; text-align: left">
                 <h4 class="card-title"><strong>{{book.name}}</strong></h4>
                 <p class="card-text">
-                    <strong>Author:</strong> {{book.author}}<br/>
-                    <strong>Description:</strong> <truncate clamp=" Развернуть ↓" :length="500" less=" Свернуть ↑" :text=book.description></truncate><br/>
-                    <strong>Pages:</strong> {{book.pagesNum}}<br/>
+                    <strong>Автор:</strong> {{book.author}}<br/>
+                    <strong>Описание:</strong> <truncate clamp=" Развернуть ↓" :length="500" less=" Свернуть ↑" :text=book.description></truncate><br/>
                 </p>
                 <star-rating v-bind="config"></star-rating>
                 <router-link :to="'book/' + this.book.id" class="btn btn-primary shadowed-button" style="margin-top: 20px">Страница книги</router-link>

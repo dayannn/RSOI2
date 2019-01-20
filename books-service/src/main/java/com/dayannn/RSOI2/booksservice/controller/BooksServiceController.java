@@ -53,4 +53,11 @@ public class BooksServiceController {
         booksService.setRating(id, rating);
         logger.info("[POST] /books/" + id + "/serRating/" + rating);
     }
+
+    @GetMapping(value = "/book/{id}")
+    public Book getBookById(@PathVariable Long id) throws BookNotFoundException {
+        logger.info("[GET] /book/" + id);
+        return booksService.getBookById(id);
+    }
+
 }

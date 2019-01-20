@@ -47,6 +47,7 @@
 
 <script>
     export default {
+        name: "AddUserForm",
         data () {
             return {
                 user: {

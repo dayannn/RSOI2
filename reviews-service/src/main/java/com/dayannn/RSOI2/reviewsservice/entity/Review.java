@@ -3,6 +3,7 @@ package com.dayannn.RSOI2.reviewsservice.entity;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 @Table(name = "REVIEWS")
@@ -23,6 +24,9 @@ public class Review {
 
     @Column(name="RATING", columnDefinition = "double precision default 5.0")
     private double rating;
+
+    @Column(name="POSTED_TIME")
+    private Long postedTime;
 
     public Long getId() {
         return id;
@@ -60,6 +64,14 @@ public class Review {
         this.rating = rating;
     }
 
+    public Long getPostedTime() {
+        return postedTime;
+    }
+
+    public void setPostedTime(Long postedTime) {
+        this.postedTime = postedTime;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -74,6 +86,7 @@ public class Review {
                 .append(text, review.text)
                 .append(uid, review.uid)
                 .append(bookId, review.bookId)
+                .append(postedTime, review.postedTime)
                 .isEquals();
     }
 
@@ -85,6 +98,7 @@ public class Review {
                 .append(uid)
                 .append(bookId)
                 .append(rating)
+                .append(postedTime)
                 .toHashCode();
     }
 
@@ -96,6 +110,7 @@ public class Review {
                 ", uid=" + uid +
                 ", bookId=" + bookId +
                 ", rating=" + rating +
+                ", postedTime=" + postedTime +
                 '}';
     }
 }
