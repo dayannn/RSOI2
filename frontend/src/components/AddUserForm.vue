@@ -62,6 +62,7 @@
             onSubmit (evt) {
                 evt.preventDefault();
                 this.$emit('add-user', this.user);
+
             },
             onCancel (evt) {
                 evt.preventDefault();

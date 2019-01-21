@@ -32,13 +32,13 @@
                 axios.delete(`/api/users/${id}`)
                     .then()
                     .catch(err => console.log(err));
-                this.updateData();
+                setTimeout(() => {this.updateData()}, 500);
             },
             addUser(user){
                 axios.post('api/users', user)
-                    .then(this.updateData())
+                    .then(this.hideAddUserForm)
                     .catch(err => console.log(err));
-
+                setTimeout(() => {this.updateData()}, 500);
             },
             updateData(){
                 axios.get('/api/users')

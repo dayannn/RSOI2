@@ -77,15 +77,21 @@
                 setTimeout(() => {this.updateData()}, 500);
             },
             updateData(){
-                console.log("waiting ended");
                 axios.get("/api/book/" + this.$route.params.id + "/reviews")
                     .then(res => {
-
                         this.reviews.splice(0, this.reviews.length);
                         this.reviews.push(...  res.data);
-
                     })
-                    .catch(err => console.log(err))
+                    .catch(err => console.log(err));
+
+                this.renderStars = false;
+
+                axios.get("/api/book/" + this.$route.params.id)
+                    .then(res => {
+                        this.book = res.data;
+                        this.starsConfig.rating = Number((this.book.rating).toFixed(2));
+                        this.renderStars = true;
+                    })
             }
         },
         data(){
