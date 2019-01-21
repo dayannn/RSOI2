@@ -6,6 +6,7 @@ import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
@@ -54,9 +55,13 @@ public class GatewayServiceController {
     }
 
     @GetMapping(path = "/book/{bookId}/reviews", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getReviewsForBook(@PathVariable Long bookId) throws IOException{
-        logger.info("[GET] /book/" + bookId + "/reviews");
-        return gatewayService.getReviewsForBook(bookId);
+    public String getReviewsForBook(@PathVariable Long bookId,
+                                    @RequestParam (value = "page") int page,
+                                    @RequestParam (value = "size") int size) throws IOException{
+        logger.info("[GET] /book/" + bookId + "/reviews/?page=" + page + "&size=" + size);
+        PageRequest p;
+        p = PageRequest.of(page, size);
+        return gatewayService.getReviewsForBook(bookId, p);
     }
 
     @GetMapping(path = "book/{bookId}", produces = MediaType.APPLICATION_JSON_VALUE)

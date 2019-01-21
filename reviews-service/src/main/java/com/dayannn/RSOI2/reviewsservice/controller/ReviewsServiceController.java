@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,9 +50,18 @@ public class ReviewsServiceController {
     }
 
     @GetMapping(value = "/reviews/bybook/{bookId}")
-    public List<Review> getReviewsByBook(@PathVariable Long bookId){
-        logger.info("[GET] /reviews/bybook/" + bookId);
-        return reviewsService.getReviewsByBook(bookId);
+    public Object getReviewsByBook(@PathVariable Long bookId,
+                                         @RequestParam (value = "page", required = false) Integer page,
+                                         @RequestParam (value = "size", required = false) Integer size){
+        if (page != null && size != null) {
+            logger.info("[GET] /reviews/bybook/" + bookId + " page= " + page + ", size= " + size);
+            PageRequest p = PageRequest.of(page, size);
+            return reviewsService.getReviewsByBook(bookId, p);
+        }
+        else{
+            logger.info("[GET] /reviews/bybook/");
+            return reviewsService.getReviewsByBook(bookId);
+        }
     }
 
     @DeleteMapping(value = "reviews/{id}")

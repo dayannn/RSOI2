@@ -52,6 +52,14 @@
                 <h5 class="card-title"><b>Рецензии пользователей</b></h5>
             </b-row>
             <hr style="color: #cfcfcf; size: 2px; margin: 0"/>
+
+            <b-pagination size="md"
+                          v-model="currentPage"
+                          :total-rows=pagesNum
+                          :per-page=1
+                          v-on:change="reviewAdded"
+                          style="margin: auto; padding-top: 20px"></b-pagination>
+
             <b-row class="card-content">
                 <div v-bind:key="review.id" v-for="review in reviews">
                     <ReviewItem v-bind:review="review" v-bind:book="book" v-on:review-deleted="reviewDeleted"/>
@@ -69,18 +77,27 @@
     export default {
         name:"Book",
         components: {StarRating, ReviewItem, AddReviewForm},
+        computed:{
+            pageLink(){
+                return this.linkGen(this.currentPage);
+            }
+        },
         methods: {
             reviewAdded(){
-                setTimeout(() => {this.updateData()}, 500);
+                setTimeout(() => {this.updateData()}, 50);
+                this.currentPage = 0;
             },
             reviewDeleted(){
-                setTimeout(() => {this.updateData()}, 500);
+                setTimeout(() => {this.updateData()}, 50);
+                this.currentPage = 0;
             },
             updateData(){
-                axios.get("/api/book/" + this.$route.params.id + "/reviews")
+                console.log("update called");
+                axios.get(this.pageLink)
                     .then(res => {
+                        this.pagesNum = res.data.totalPages;
                         this.reviews.splice(0, this.reviews.length);
-                        this.reviews.push(...  res.data);
+                        this.reviews.push(...  res.data.content);
                     })
                     .catch(err => console.log(err));
 
@@ -92,6 +109,9 @@
                         this.starsConfig.rating = Number((this.book.rating).toFixed(2));
                         this.renderStars = true;
                     })
+            },
+            linkGen(pageNum){
+                return "/api/book/" + this.$route.params.id + "/reviews?page=" + (pageNum-1) + "&size=" + this.pageSize;
             }
         },
         data(){
@@ -114,7 +134,10 @@
                         starHeight: 20
                     }
                 },
-                renderStars: false
+                renderStars: false,
+                currentPage: 1,
+                pagesNum: 0,
+                pageSize: 5
             }
         },
         created() {
@@ -125,9 +148,10 @@
                     this.renderStars = true;
                 })
                 .catch(err => console.log(err))
-            axios.get("/api/book/" + this.$route.params.id + "/reviews")
+            axios.get(this.pageLink)
                 .then(res => {
-                    this.reviews = res.data
+                    this.pagesNum = res.data.totalPages;
+                    this.reviews = res.data.content;
                 })
                 .catch(err => console.log(err))
         }

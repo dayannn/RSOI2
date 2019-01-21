@@ -4,7 +4,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -12,6 +11,7 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -230,8 +230,11 @@ public class GatewayServiceImplementation implements GatewayService {
         }
     }
 
-    public String getReviewsForBook(Long bookId) throws IOException{
-        String url = reviewsServiceUrl + "/reviews/bybook/" + bookId;
+
+    @Override
+    public String getReviewsForBook(Long bookId, PageRequest p) throws IOException{
+        String url = reviewsServiceUrl + "/reviews/bybook/" + bookId +
+                "?page=" + p.getPageNumber() + "&size=" + p.getPageSize();
         URL website = new URL(url);
         URLConnection connection = website.openConnection();
         BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
