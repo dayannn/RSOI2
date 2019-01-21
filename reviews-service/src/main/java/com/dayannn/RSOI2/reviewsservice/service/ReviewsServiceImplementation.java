@@ -7,7 +7,12 @@ import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class ReviewsServiceImplementation implements ReviewsService {
@@ -25,20 +30,23 @@ public class ReviewsServiceImplementation implements ReviewsService {
 
     @Override
     public Long createReview(Review review) {
+        review.setPostedTime(Calendar.getInstance().getTime().getTime());
         reviewsRepository.save(review);
         return review.getId();
     }
 
     @Override
     public List<Review> getReviewsByUser(Long userId) {
-        List<Review> reviews = reviewsRepository.findByUid(userId);
+        List<Review> reviews = reviewsRepository.findByUidOrderByPostedTimeDesc(userId);
         return reviews;
     }
 
+
+
     @Override
+    @Transactional
     public List<Review> getReviewsByBook(Long bookId) {
-        List<Review> reviews = reviewsRepository.findByBookId(bookId);
-        return reviews;
+        return reviewsRepository.findByBookIdOrderByPostedTimeDesc(bookId);
     }
 
     @Override

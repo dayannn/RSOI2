@@ -41,6 +41,11 @@ public class UsersServiceImplementation implements UsersService{
         usersRepository.save(user);
     }
 
+    @Override
+    public void deleteUser(Long id){
+        usersRepository.deleteById(id);
+    }
+
 //    @Override
 //    public void setRating(Long id, Integer rating) throws UserNotFoundException{
 //        User user = usersRepository.findById(id)

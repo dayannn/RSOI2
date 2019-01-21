@@ -23,6 +23,24 @@ public class GatewayServiceController {
         this.gatewayService = gatewayService;
     }
 
+    @GetMapping(path = "users", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String getUsers() throws IOException{
+        logger.info("[GET] users/");
+        return gatewayService.getUsers();
+    }
+
+    @DeleteMapping(path = "users/{userId}")
+    public void deleteUser(@PathVariable Long userId) throws IOException{
+        logger.info("[DELETE] users/" + userId);
+        gatewayService.deleteUser(userId);
+    }
+
+    @PostMapping(path = "users")
+    public void addUser(@RequestBody String user) throws IOException{
+        logger.info("[POST] /users\n ", user);
+        gatewayService.addUser(user);
+    }
+
     @GetMapping(path = "users/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public String getUserById(@PathVariable Long userId) throws IOException {
         logger.info("[GET] users/" +userId);
@@ -30,10 +48,23 @@ public class GatewayServiceController {
     }
 
     @GetMapping(path = "/users/{userId}/reviews", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getReviewsByUser(@PathVariable Long userId) throws IOException, JSONException {
+    public String getReviewsByUser(@PathVariable Long userId) throws IOException {
         logger.info("[GET] /users/" + userId + "/reviews");
         return gatewayService.getReviewsByUser(userId);
     }
+
+    @GetMapping(path = "/book/{bookId}/reviews", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String getReviewsForBook(@PathVariable Long bookId) throws IOException{
+        logger.info("[GET] /book/" + bookId + "/reviews");
+        return gatewayService.getReviewsForBook(bookId);
+    }
+
+    @GetMapping(path = "book/{bookId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String getBookById(@PathVariable Long bookId) throws IOException{
+        logger.info("[GET] /book/" + bookId);
+        return gatewayService.getBookById(bookId);
+    }
+
 
     @GetMapping(path = "/books", produces = MediaType.APPLICATION_JSON_VALUE)
     public String getBooksWithReviews() throws IOException, JSONException {
