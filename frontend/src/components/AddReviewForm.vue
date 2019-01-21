@@ -11,6 +11,17 @@
                     class="mb-3">
             </b-form-select>
             Ваша оценка книги:
+            <vue-stars
+                    name="demo"
+                    active-color="#ed8a19"
+                    inactive-color="#737373"
+                    shadow-color="#ffff00"
+                    hover-color="#ffb422"
+                    :max="5"
+                    :readonly="false"
+                    char="★"
+                    v-model="starsGiven"
+            />
             <br/>
             <div v-on:click="textInputState = null">
                 <b-form-textarea id="textarea1"
@@ -30,11 +41,18 @@
 
 <script>
     import axios from 'axios';
+    import VueStars from './VueStars';
     export default {
         name:"AddReviewForm",
+        components: {VueStars},
         data () {
             return {
-                review: {},
+                review: {
+                    text:"",
+                    uid:"",
+                    bookId:"",
+                    rating:""
+                },
                 users: [],
                 userSelected: null,
                 userOptions: [
@@ -42,26 +60,39 @@
                 ],
                 reviewText:'',
                 selectorState: null,
-                textInputState: null
+                textInputState: null,
+                starsGiven: 3
             }
         },
         methods: {
             onSubmit (evt) {
                 evt.preventDefault();
-
                 if (this.userSelected === null)
                     this.selectorState = false;
-
                 if (this.reviewText.length <= 0)
                     this.textInputState = false;
                 else
                     this.textInputState = null;
 
+                if (this.userSelected === null || this.reviewText.length <= 0)
+                    return;
+
+                this.review.bookId = this.book.id;
+                this.review.text = this.reviewText;
+                this.review.uid = this.userSelected;
+                this.review.rating = this.starsGiven;
+
+                axios.post('api/reviews', this.review)
+                    .then(this.$emit('review-added'))
+                    .catch(err => console.log(err));
+
+                this.reviewText = '';
+                this.userSelected = null;
+                this.starsGiven = 3;
             },
             onCancel (evt) {
                 evt.preventDefault();
-
-            }
+            },
         },
         created(){
             axios.get('/api/users/')

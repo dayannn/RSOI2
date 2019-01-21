@@ -13,7 +13,6 @@ Vue.config.productionTip = false;
 Vue.use(BootstrapVue);
 Vue.use(VueFilterDateFormat);
 
-
 new Vue({
   router,
   render: h => h(App)

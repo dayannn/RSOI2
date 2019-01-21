@@ -1,6 +1,8 @@
 <template>
-    <b-card style="margin: 10px">
-        <b-col>
+    <b-card style="margin: 10px;">
+        <b-row>
+        <b-col cols="11">
+
             <b-row style="padding-top: 20px; padding-bottom: 20px">
                 <b-col cols="2">
                     <img slot="aside" src="../assets/avatar.jpg" style="width: 50px; height: 50px" alt="avatar" />
@@ -10,7 +12,8 @@
                     <div style="font-size: 16px" ><i>{{this.book.name}}</i> автора <i>{{this.book.author}}</i></div>
                 </b-col>
                 <b-col cols="2" style="text-align: right; margin-top: 5px">
-                    <div style="font-size: 12px"><i>{{date | dateFormat('MM/DD/YYYY hh:mm')}}</i></div>
+                    <div style="font-size: 12px"><i>{{date | dateFormat('DD/MM/YYYY hh:mm')}}</i></div>
+
                 </b-col>
 
             </b-row>
@@ -32,6 +35,10 @@
             </div>
 
         </b-col>
+        <b-col cols=1>
+            <b-button @click="deleteReview" variant="outline-danger" >x</b-button>
+        </b-col>
+        </b-row>
     </b-card>
 </template>
 
@@ -42,7 +49,11 @@
         name: "ReviewItem",
         components: {StarRating},
         methods: {
-
+            deleteReview(){
+                axios.delete('/api/reviews/' + this.review.id)
+                    .then(this.$emit('review-deleted'))
+                    .catch(err => console.log(err));
+            }
         },
         data(){
             return{

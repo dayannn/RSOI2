@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -36,13 +37,16 @@ public class ReviewsServiceImplementation implements ReviewsService {
 
     @Override
     public List<Review> getReviewsByUser(Long userId) {
-        return reviewsRepository.findByUid(userId);
+        List<Review> reviews = reviewsRepository.findByUidOrderByPostedTimeDesc(userId);
+        return reviews;
     }
+
+
 
     @Override
     @Transactional
     public List<Review> getReviewsByBook(Long bookId) {
-        return reviewsRepository.findByBookId(bookId);
+        return reviewsRepository.findByBookIdOrderByPostedTimeDesc(bookId);
     }
 
     @Override

@@ -42,7 +42,7 @@
             <hr style="color: #cfcfcf; size: 2px; margin: 0"/>
             <b-row class="card-content">
                 <b-col>
-                    <AddReviewForm v-bind:book="book"/>
+                    <AddReviewForm v-bind:book="book" v-on:review-added="reviewAdded"/>
                 </b-col>
             </b-row>
         </div>
@@ -54,7 +54,7 @@
             <hr style="color: #cfcfcf; size: 2px; margin: 0"/>
             <b-row class="card-content">
                 <div v-bind:key="review.id" v-for="review in reviews">
-                    <ReviewItem v-bind:review="review" v-bind:book="book"/>
+                    <ReviewItem v-bind:review="review" v-bind:book="book" v-on:review-deleted="reviewDeleted"/>
                 </div>
             </b-row>
         </div>
@@ -70,7 +70,23 @@
         name:"Book",
         components: {StarRating, ReviewItem, AddReviewForm},
         methods: {
+            reviewAdded(){
+                setTimeout(() => {this.updateData()}, 500);
+            },
+            reviewDeleted(){
+                setTimeout(() => {this.updateData()}, 500);
+            },
+            updateData(){
+                console.log("waiting ended");
+                axios.get("/api/book/" + this.$route.params.id + "/reviews")
+                    .then(res => {
 
+                        this.reviews.splice(0, this.reviews.length);
+                        this.reviews.push(...  res.data);
+
+                    })
+                    .catch(err => console.log(err))
+            }
         },
         data(){
             return {
@@ -104,7 +120,9 @@
                 })
                 .catch(err => console.log(err))
             axios.get("/api/book/" + this.$route.params.id + "/reviews")
-                .then(res => this.reviews = res.data)
+                .then(res => {
+                    this.reviews = res.data
+                })
                 .catch(err => console.log(err))
         }
     }

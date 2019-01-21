@@ -50,7 +50,7 @@ public class ReviewsServiceTest {
         review.setUid(2L);
         review.setText("Awesome");
 
-        given(reviewsRepository.findByUid(2L)).willReturn(reviews);
+        given(reviewsRepository.findByUidOrderByPostedTimeDesc(2L)).willReturn(reviews);
         List<Review> reviewsReturned = reviewsService.getReviewsByUser(2L);
         assertThat(reviewsReturned, is(reviews));
     }
@@ -63,7 +63,7 @@ public class ReviewsServiceTest {
         review.setUid(2L);
         review.setText("Awesome");
 
-        given(reviewsRepository.findByBookId(4L)).willReturn(reviews);
+        given(reviewsRepository.findByBookIdOrderByPostedTimeDesc(4L)).willReturn(reviews);
         List<Review> reviewsReturned = reviewsService.getReviewsByBook(4L);
         assertThat(reviewsReturned, is(reviews));
     }
