@@ -5,6 +5,8 @@ import com.dayannn.RSOI2.reviewsservice.exeption.ReviewNotFoundException;
 import com.dayannn.RSOI2.reviewsservice.repository.ReviewsRepository;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -45,9 +47,16 @@ public class ReviewsServiceImplementation implements ReviewsService {
 
     @Override
     @Transactional
+    public Page<Review> getReviewsByBook(Long bookId, PageRequest p) {
+        return reviewsRepository.findByBookIdOrderByPostedTimeDesc(bookId, p);
+    }
+
+    @Override
+    @Transactional
     public List<Review> getReviewsByBook(Long bookId) {
         return reviewsRepository.findByBookIdOrderByPostedTimeDesc(bookId);
     }
+
 
     @Override
     public void deleteReviewsByBook(Long bookId) {
