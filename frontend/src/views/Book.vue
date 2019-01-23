@@ -84,11 +84,11 @@
         },
         methods: {
             reviewAdded(){
-                setTimeout(() => {this.updateData()}, 50);
+                setTimeout(() => {this.updateData()}, 100);
                 this.currentPage = 0;
             },
             reviewDeleted(){
-                setTimeout(() => {this.updateData()}, 50);
+                setTimeout(() => {this.updateData()}, 100);
                 this.currentPage = 0;
             },
             updateData(){

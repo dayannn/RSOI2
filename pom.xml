@@ -6,6 +6,12 @@
 	<groupId>com.dayannn</groupId>
 	<artifactId>RSOI2</artifactId>
 	<version>0.1</version>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-autoconfigure</artifactId>
+		</dependency>
+	</dependencies>
 	<packaging>pom</packaging>
 
 	<name>RSOI2</name>
@@ -23,6 +29,7 @@
 		<module>gateway-service</module>
 		<module>reviews-service</module>
 		<module>users-service</module>
+		<module>auth-service</module>
 		<module>frontend</module>
 	</modules>
 
