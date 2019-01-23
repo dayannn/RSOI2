@@ -24,6 +24,9 @@ import com.dayannn.RSOI2.authservice.service.UserDetailsServiceImpl;
 @EnableAuthorizationServer
 public class OAuthConfiguration extends AuthorizationServerConfigurerAdapter {
 
+	private static final int AUTH_TOKEN_VALIDITY_SECONDS = 60*5;
+    private static final int REFRESH_TOKEN_VALIDITY_SECONDS = 60*60*24*30;
+
 	@Autowired
 	@Qualifier("authenticationManagerBean")
 	private AuthenticationManager authenticationManager;
@@ -39,9 +42,21 @@ public class OAuthConfiguration extends AuthorizationServerConfigurerAdapter {
 	@Override
 	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
 		clients.inMemory()
-		.withClient("fooClientId").secret("secret")
-		.authorizedGrantTypes("password", "authorization_code", "refresh_token").scopes("read","write")
-		.autoApprove(true);
+            .withClient("fooClientId")
+                .secret("secret")
+                .authorizedGrantTypes("password", "authorization_code", "refresh_token")
+                .scopes("read","write")
+                .accessTokenValiditySeconds(AUTH_TOKEN_VALIDITY_SECONDS)
+                .refreshTokenValiditySeconds(REFRESH_TOKEN_VALIDITY_SECONDS)
+                .autoApprove(true)
+        .and()
+            .withClient("gatewayService")
+                .secret("gatewaySecret")
+                .authorizedGrantTypes("authorization_code", "password", "refresh_token")
+                .scopes("read", "write")
+                .accessTokenValiditySeconds(AUTH_TOKEN_VALIDITY_SECONDS)
+                .refreshTokenValiditySeconds(REFRESH_TOKEN_VALIDITY_SECONDS)
+                .autoApprove(true);
 	}
 
     @Override
