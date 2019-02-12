@@ -32,7 +32,7 @@ public class OAuthConfiguration extends AuthorizationServerConfigurerAdapter {
 	private AuthenticationManager authenticationManager;
 	
 	@Autowired
-	UserDetailsService userDetailsService;
+	private UserDetailsService userDetailsService;
 
 	@Override
 	public void configure(final AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
@@ -43,7 +43,7 @@ public class OAuthConfiguration extends AuthorizationServerConfigurerAdapter {
 	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
 		clients.inMemory()
             .withClient("fooClientId")
-                .secret("secret")
+                //.secret("secret")
                 .authorizedGrantTypes("password", "authorization_code", "refresh_token")
                 .scopes("read","write")
                 .accessTokenValiditySeconds(AUTH_TOKEN_VALIDITY_SECONDS)
@@ -61,8 +61,9 @@ public class OAuthConfiguration extends AuthorizationServerConfigurerAdapter {
 
     @Override
     public void configure(final AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-    	endpoints.tokenStore(tokenStore()).authenticationManager(authenticationManager).accessTokenConverter(defaultAccessTokenConverter())
-    	.userDetailsService(userDetailsService);
+    	endpoints.tokenStore(tokenStore()).authenticationManager(authenticationManager)
+                .accessTokenConverter(defaultAccessTokenConverter())
+                .userDetailsService(userDetailsService);
     }
 
 	@Bean
