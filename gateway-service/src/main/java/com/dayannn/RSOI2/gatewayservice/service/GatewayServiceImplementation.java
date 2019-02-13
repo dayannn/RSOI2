@@ -330,4 +330,22 @@ public class GatewayServiceImplementation implements GatewayService {
 
         return response;
     }
+
+    @Override
+    public String oauthGetCode(String host, String client_id, String redirect_uri, String response_type) throws IOException {
+        return (host + "/oauth/authorize?grant_type=authorization_code&client_id="+client_id+"&redirect_uri="+redirect_uri+"&response_type="+response_type);
+    }
+
+    @Override
+    public String oauthExchangeCode(String host, String code, String redirect_uri, String client_cred) throws IOException {
+
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        HttpPost request = new HttpPost((host + "/oauth/token?grant_type=authorization_code&code="+code+"&redirect_uri="+redirect_uri));
+
+        request.addHeader("Authorization", "Basic " + client_cred);
+        HttpResponse response = httpClient.execute(request);
+
+        return EntityUtils.toString(response.getEntity());
+    }
+
 }

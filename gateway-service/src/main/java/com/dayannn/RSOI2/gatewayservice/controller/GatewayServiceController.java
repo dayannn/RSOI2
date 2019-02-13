@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -153,5 +154,37 @@ public class GatewayServiceController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 
         return ResponseEntity.ok(clientToken);
+    }
+
+    @GetMapping(path = "/oauth/login", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity oauthLogin(
+            @RequestParam(value = "client_id") String client_id,
+            @RequestParam(value = "redirect_uri") String redirect_uri) throws IOException, JSONException {
+
+        logger.info("[GET] /oauth/login");
+
+        String r = gatewayService.oauthGetCode(authServiceUrl, client_id, redirect_uri, "code");
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Location", r);
+        return new ResponseEntity<String>(headers, HttpStatus.FOUND);
+    }
+
+    // Обмен кода OAUTH
+    @GetMapping(path = "/oauth/token", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity oauthToken(
+            @RequestParam(value = "code") String code,
+            @RequestParam(value = "redirect_uri") String redirect_uri,
+            @RequestHeader("Authorization") String client_cred) throws IOException, JSONException {
+
+        logger.info("[GET] /oauth/token");
+
+        // Меняем код у аут.сервиса
+
+        String clientCode = "";
+        client_cred = client_cred.replace("Basic","");
+
+        String r = gatewayService.oauthExchangeCode(authServiceUrl, code, redirect_uri, client_cred);
+
+        return ResponseEntity.ok(r);
     }
 }
