@@ -50,6 +50,14 @@ public class AuthConfiguration extends AuthorizationServerConfigurerAdapter {
                 .authorizedGrantTypes("client_credentials")
                 .scopes("read", "write")
                 .accessTokenValiditySeconds(AUTH_TOKEN_VALIDITY_SECONDS)
+                .autoApprove(true)
+        .and()
+            .withClient("third-party-app")
+                .secret("secret")
+                .authorizedGrantTypes("authorization_code", "refresh_token")
+                .scopes("read", "write")
+                .accessTokenValiditySeconds(AUTH_TOKEN_VALIDITY_SECONDS)
+                .refreshTokenValiditySeconds(REFRESH_TOKEN_VALIDITY_SECONDS)
                 .autoApprove(true);
 	}
 

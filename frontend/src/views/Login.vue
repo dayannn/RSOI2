@@ -1,15 +1,17 @@
 <template>
     <div>
         <form class="login" @submit.prevent="login" style="margin: auto; padding-top: 80px">
-            <h1>Sign in</h1>
+            <h1>Вход</h1>
             <br/>
-            <label>User name</label>
-            <b-form-input required v-model="username" type="text" placeholder="Enter login"> </b-form-input>
+            <label>Имя пользователя</label>
+            <b-form-input required v-model="username" type="text" placeholder="Введите имя пользователя"> </b-form-input>
             <br/>
-            <label>Password</label>
-            <b-form-input required v-model="password" type="password" placeholder="Enter password"></b-form-input>
+            <label>Пароль</label>
+            <b-form-input required v-model="password" type="password" placeholder="Введите пароль"></b-form-input>
             <hr/>
-            <button class="btn btn-info btn-sm shadowed-button" type="submit">Login</button>
+            <button class="btn btn-info btn-sm shadowed-button" type="submit">Войти</button>
+            <br/>
+            <label style="color: #cc0000">{{errorText}}</label>
         </form>
     </div>
 </template>
@@ -33,14 +35,21 @@
             return {
                 username: '',
                 password: '',
+                errorText: ''
             }
         },
         methods: {
             login: function () {
                 const { username, password } = this;
-                this.$store.dispatch(AUTH_REQUEST, { username, password }).then(() => {
-                    this.$router.push('/')
-                })
+                this.$store.dispatch(AUTH_REQUEST, { username, password })
+                    .then(() => {
+                        this.$router.push('/');
+                        this.errorText = '';
+                    })
+                    .catch(err => {
+                        this.errorText="Ошибка входа: неверный логин или пароль";
+                        console.log(err);
+                    })
             }
         },
     }

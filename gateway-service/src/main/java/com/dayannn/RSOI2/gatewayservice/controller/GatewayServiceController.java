@@ -169,7 +169,7 @@ public class GatewayServiceController {
         return new ResponseEntity<String>(headers, HttpStatus.FOUND);
     }
 
-    // Обмен кода OAUTH
+
     @GetMapping(path = "/oauth/token", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity oauthToken(
             @RequestParam(value = "code") String code,
@@ -178,9 +178,6 @@ public class GatewayServiceController {
 
         logger.info("[GET] /oauth/token");
 
-        // Меняем код у аут.сервиса
-
-        String clientCode = "";
         client_cred = client_cred.replace("Basic","");
 
         String r = gatewayService.oauthExchangeCode(authServiceUrl, code, redirect_uri, client_cred);
