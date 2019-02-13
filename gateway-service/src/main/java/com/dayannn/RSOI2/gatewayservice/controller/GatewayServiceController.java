@@ -7,7 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 
@@ -16,6 +18,7 @@ import java.io.IOException;
 @RequestMapping("/api")
 public class GatewayServiceController {
     private final GatewayService gatewayService;
+    final private String authServiceUrl = "http://localhost:8081";
     private Logger logger;
 
     @Autowired
@@ -25,9 +28,14 @@ public class GatewayServiceController {
     }
 
     @GetMapping(path = "users", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getUsers() throws IOException{
+    public ResponseEntity getUsers(@RequestHeader("Authorization") String token) throws IOException{
+        token = token.replace("Bearer ", "");
+        if (!gatewayService.checkToken(authServiceUrl, token)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
+
         logger.info("[GET] users/");
-        return gatewayService.getUsers();
+        return ResponseEntity.ok(gatewayService.getUsers());
     }
 
     @DeleteMapping(path = "users/{userId}")

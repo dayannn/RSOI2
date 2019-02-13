@@ -1,6 +1,7 @@
 package com.dayannn.RSOI2.authservice.service;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,6 +23,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
 		UserInfo userInfo = userInfoDAO.getUserInfoByUserName(userName);
 		GrantedAuthority authority = new SimpleGrantedAuthority(userInfo.getRole());
-		return new User(userInfo.getUserName(), userInfo.getPassword(), Arrays.asList(authority));
+		return new User(userInfo.getUserName(), userInfo.getPassword(), Collections.singletonList(authority));
 	}
 }

@@ -1,16 +1,25 @@
 package com.dayannn.RSOI2.gatewayservice.service;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpResponseFactory;
+import org.apache.http.HttpStatus;
+import org.apache.http.HttpVersion;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.DefaultHttpResponseFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicStatusLine;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +34,7 @@ import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 @Service
@@ -33,11 +43,33 @@ public class GatewayServiceImplementation implements GatewayService {
     final private String booksServiceUrl = "http://localhost:8071";
     final private String usersServiceUrl = "http://localhost:8072";
 
+
+    private String gatewayToken = "";
+    private String booksToken = "";
+    private String reviewsToken = "";
+    private String usersToken = "";
+
+    private Logger logger = LoggerFactory.getLogger(GatewayServiceImplementation.class);
+
+    @Value("${clientId}")
+    private String clientId;
+
+    @Value("${clientSecret}")
+    private String clientSecret;
+
+    public String getGatewayToken() {
+        return gatewayToken;
+    }
+
+    public void setGatewayToken(String gatewayToken) {
+        this.gatewayToken = gatewayToken;
+    }
+
     @Override
     public String getUsers() throws IOException{
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(usersServiceUrl + "/users/");
-        HttpResponse response = httpClient.execute(request);
+        HttpResponse response = authAndExecute(usersServiceUrl, request, usersToken);
 
         return EntityUtils.toString(response.getEntity());
     }
@@ -46,7 +78,7 @@ public class GatewayServiceImplementation implements GatewayService {
     public String getUserById(Long userId) throws IOException {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(usersServiceUrl + "/users/" + userId);
-        HttpResponse response = httpClient.execute(request);
+        HttpResponse response = authAndExecute(usersServiceUrl, request, usersToken);
 
         return EntityUtils.toString(response.getEntity());
     }
@@ -146,7 +178,7 @@ public class GatewayServiceImplementation implements GatewayService {
         StringEntity params = new StringEntity(user);
         request.addHeader("content-type", "application/json");
         request.setEntity(params);
-        httpClient.execute(request);
+        authAndExecute(usersServiceUrl, request, usersToken);
     }
 
 
@@ -158,16 +190,16 @@ public class GatewayServiceImplementation implements GatewayService {
             StringEntity params = new StringEntity(review, "UTF-8");
             request.addHeader("content-type", "application/json");
             request.setEntity(params);
-            HttpResponse response = httpClient.execute(request);
+            HttpResponse response = authAndExecute(reviewsServiceUrl, request, reviewsToken);
             String responseString = EntityUtils.toString(response.getEntity(), "UTF-8");
 
             JSONObject obj = new JSONObject(review);
             Long bookId = obj.getLong("bookId");
             request = new HttpPost(booksServiceUrl + "/books/" + bookId + "/add_review");
-            response = httpClient.execute(request);
+            response = authAndExecute(booksServiceUrl, request, booksToken);
 
             HttpGet request2 = new HttpGet(reviewsServiceUrl + "/reviews/bybook/" + bookId);
-            HttpResponse response2 = httpClient.execute(request2);
+            HttpResponse response2 = authAndExecute(reviewsServiceUrl, request2, reviewsToken);
             String responseString2 = EntityUtils.toString(response2.getEntity(), "UTF-8");
             JSONArray revsArray = new JSONArray(responseString2);
             double rating = 0;
@@ -177,7 +209,7 @@ public class GatewayServiceImplementation implements GatewayService {
             double averageRating = rating/revsArray.length();
 
             HttpPost request3 = new HttpPost(booksServiceUrl + "/books/" + bookId +"/setRating/" + String.valueOf(averageRating));
-            HttpResponse response3 = httpClient.execute(request3);
+            HttpResponse response3 = authAndExecute(booksServiceUrl, request3, booksToken);
         } catch (Exception ex) {
             // обработка исключения
         } finally {
@@ -206,13 +238,13 @@ public class GatewayServiceImplementation implements GatewayService {
 
 
             HttpDelete request = new HttpDelete(reviewsServiceUrl + "/reviews/" + reviewId);
-            HttpResponse response = httpClient.execute(request);
+            HttpResponse response = authAndExecute(reviewsServiceUrl, request, reviewsToken);
 
             HttpPost request3 = new HttpPost(booksServiceUrl + "/books/" + bookId + "/delete_review");
-            response = httpClient.execute(request3);
+            response = authAndExecute(booksServiceUrl, request3, booksToken);
 
             HttpGet request2 = new HttpGet(reviewsServiceUrl + "/reviews/bybook/" + bookId);
-            HttpResponse response2 = httpClient.execute(request2);
+            HttpResponse response2 = authAndExecute(reviewsServiceUrl, request2, reviewsToken);
             String responseString2 = EntityUtils.toString(response2.getEntity(), "UTF-8");
             JSONArray revsArray = new JSONArray(responseString2);
             double rating = 0;
@@ -222,7 +254,7 @@ public class GatewayServiceImplementation implements GatewayService {
             double averageRating = rating/revsArray.length();
 
             HttpPost request4 = new HttpPost(booksServiceUrl + "/books/" + bookId +"/setRating/" + averageRating);
-            HttpResponse response4 = httpClient.execute(request4);
+            HttpResponse response4 = authAndExecute(booksServiceUrl, request4, booksToken);
         } catch (Exception ex) {
             // обработка исключения
         } finally {
@@ -254,9 +286,82 @@ public class GatewayServiceImplementation implements GatewayService {
     public String getBookById(@PathVariable Long bookId) throws IOException{
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(booksServiceUrl + "/book/" + bookId);
-        HttpResponse response = httpClient.execute(request);
+        HttpResponse response = authAndExecute(booksServiceUrl, request, booksToken);
 
         return EntityUtils.toString(response.getEntity());
     }
 
+    private String requestToken(String host, String credentials) throws IOException {
+        String token = "";
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        HttpPost request = new HttpPost(host + "/oauth/token?grant_type=client_credentials");
+        request.addHeader("Authorization",
+                "Basic " + credentials);
+
+        HttpResponse r = httpClient.execute(request);
+        try {
+            JSONObject p = new JSONObject(EntityUtils.toString(r.getEntity()));
+            token = p.getString("access_token");
+            logger.info("Token received for host " + host + " : " + gatewayToken);
+        } catch (JSONException e) {
+            logger.error("Error parsing json ", e);
+        }
+        return token;
+    }
+
+    @Override
+    public boolean checkToken(String host, String token) throws IOException {
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        HttpGet request;
+        HttpResponse response = null;
+        int i = 0;
+        while (i <= 3) {
+            request = new HttpGet(host + "/oauth/check_token?token=" + token); // not the token i need
+            request.addHeader("Authorization",
+                    "Basic " + Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes()));
+            response = httpClient.execute(request);
+
+            if (response.getStatusLine().getStatusCode() == 400 || response.getStatusLine().getStatusCode() == 401 || response.getStatusLine().getStatusCode() == 403) {
+                gatewayToken = requestToken(host, token);
+            } else
+                break;
+            i++;
+        }
+
+        String username = "";
+        try {
+            JSONObject p = new JSONObject(EntityUtils.toString(response.getEntity()));
+            boolean active = p.getBoolean("active");
+            if (active) {
+                return true;
+            }
+        } catch (JSONException e) {
+            logger.error("Error parsing json ", e);
+        }
+
+        logger.error("Unchecked error while checking token");
+        return false;
+    }
+
+    private HttpResponse authAndExecute(String host, HttpUriRequest request, String token) throws IOException {
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+
+        HttpResponseFactory factory = new DefaultHttpResponseFactory();
+        HttpResponse response = factory.newHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, HttpStatus.SC_BAD_REQUEST, null), null);
+
+        int i = 0;
+        while (i < 3) {
+            request.removeHeaders("Authorization");
+            request.addHeader("Authorization", "Bearer " + token);
+            response = httpClient.execute(request);
+            if (response.getStatusLine().getStatusCode() == 401 || response.getStatusLine().getStatusCode() == 403) {
+                token = (requestToken(host, Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes())));
+            } else
+                //return response;
+                break;
+            i++;
+        }
+
+        return response;
+    }
 }
