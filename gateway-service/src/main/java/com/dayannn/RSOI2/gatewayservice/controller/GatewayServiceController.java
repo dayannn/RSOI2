@@ -27,73 +27,112 @@ public class GatewayServiceController {
         this.gatewayService = gatewayService;
     }
 
+    private boolean isTokenValid(String token) throws IOException {
+        token = token.replace("Bearer ", "");
+        return gatewayService.checkToken(authServiceUrl, token);
+    }
+
     @GetMapping(path = "users", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getUsers(@RequestHeader("Authorization") String token) throws IOException{
-        token = token.replace("Bearer ", "");
-        if (!gatewayService.checkToken(authServiceUrl, token)){
+        logger.info("[GET] users/");
+        if (!isTokenValid(token)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
         }
 
-        logger.info("[GET] users/");
         return ResponseEntity.ok(gatewayService.getUsers());
     }
 
     @DeleteMapping(path = "users/{userId}")
-    public void deleteUser(@PathVariable Long userId) throws IOException{
+    public ResponseEntity deleteUser(@PathVariable Long userId, @RequestHeader("Authorization") String token) throws IOException{
+        if (!isTokenValid(token)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
+
         logger.info("[DELETE] users/" + userId);
         gatewayService.deleteUser(userId);
+        return ResponseEntity.ok("");
     }
 
     @PostMapping(path = "users")
-    public void addUser(@RequestBody String user) throws IOException{
+    public ResponseEntity addUser(@RequestBody String user, @RequestHeader("Authorization") String token) throws IOException{
+        if (!isTokenValid(token)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
+
         logger.info("[POST] /users\n ", user);
         gatewayService.addUser(user);
+        return ResponseEntity.ok("");
     }
 
     @GetMapping(path = "users/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getUserById(@PathVariable Long userId) throws IOException {
+    public ResponseEntity getUserById(@PathVariable Long userId, @RequestHeader("Authorization") String token) throws IOException{
+        if (!isTokenValid(token)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
         logger.info("[GET] users/" +userId);
-        return gatewayService.getUserById(userId);
+        return ResponseEntity.ok(gatewayService.getUserById(userId));
     }
 
     @GetMapping(path = "/users/{userId}/reviews", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getReviewsByUser(@PathVariable Long userId) throws IOException {
+    public ResponseEntity getReviewsByUser(@PathVariable Long userId, @RequestHeader("Authorization") String token) throws IOException{
+        if (!isTokenValid(token)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
         logger.info("[GET] /users/" + userId + "/reviews");
-        return gatewayService.getReviewsByUser(userId);
+        return ResponseEntity.ok(gatewayService.getReviewsByUser(userId));
     }
 
     @GetMapping(path = "/book/{bookId}/reviews", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getReviewsForBook(@PathVariable Long bookId,
+    public ResponseEntity getReviewsForBook(@PathVariable Long bookId,
                                     @RequestParam (value = "page") int page,
-                                    @RequestParam (value = "size") int size) throws IOException{
+                                    @RequestParam (value = "size") int size,
+                                    @RequestHeader("Authorization") String token) throws IOException{
+        if (!isTokenValid(token)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
         logger.info("[GET] /book/" + bookId + "/reviews/?page=" + page + "&size=" + size);
         PageRequest p;
         p = PageRequest.of(page, size);
-        return gatewayService.getReviewsForBook(bookId, p);
+        return ResponseEntity.ok(gatewayService.getReviewsForBook(bookId, p));
     }
 
     @GetMapping(path = "book/{bookId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getBookById(@PathVariable Long bookId) throws IOException{
+    public ResponseEntity getBookById(@PathVariable Long bookId, @RequestHeader("Authorization") String token) throws IOException{
+        if (!isTokenValid(token)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
         logger.info("[GET] /book/" + bookId);
-        return gatewayService.getBookById(bookId);
+        return ResponseEntity.ok(gatewayService.getBookById(bookId));
     }
 
 
     @GetMapping(path = "/books", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String getBooksWithReviews() throws IOException, JSONException {
+    public ResponseEntity getBooksWithReviews(@RequestHeader("Authorization") String token) throws IOException, JSONException {
         logger.info("[GET] /books");
-        return gatewayService.getBooksWithReviews();
+        if (!isTokenValid(token)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
+        return ResponseEntity.ok(gatewayService.getBooksWithReviews());
     }
 
     @PostMapping(value = "/reviews")
-    public void createReview(@RequestBody String review) throws IOException {
-        gatewayService.createReview(review);
+    public ResponseEntity createReview(@RequestBody String review, @RequestHeader("Authorization") String token) throws IOException {
         logger.info("[POST] /reviews ", "review: ", review);
+        if (!isTokenValid(token)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
+
+        gatewayService.createReview(review);
+        return ResponseEntity.ok("");
     }
 
     @DeleteMapping(value = "/reviews/{reviewId}")
-    public void deleteReview(@PathVariable Long reviewId) throws IOException {
-        gatewayService.deleteReview(reviewId);
+    public ResponseEntity deleteReview(@PathVariable Long reviewId, @RequestHeader("Authorization") String token) throws IOException {
         logger.info("[DELETE] /reviews/" + reviewId);
+        if (!isTokenValid(token)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        }
+        gatewayService.deleteReview(reviewId);
+        return ResponseEntity.ok("");
     }
 }
