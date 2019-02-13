@@ -1,8 +1,7 @@
 /* eslint-disable promise/param-names */
 import { AUTH_REQUEST, AUTH_ERROR, AUTH_SUCCESS, AUTH_LOGOUT } from '../actions/auth'
-import { USER_REQUEST } from '../actions/user'
-import apiCall from '../../utils/api'
 import axios from 'axios'
+import store from '../../store' // your vuex store
 
 const state = { token: localStorage.getItem('user-token') || '', status: '', hasLoadedOnce: false };
 
@@ -26,16 +25,13 @@ const actions = {
           }
       };
 
-      console.log("localstorage before request" + localStorage);
       axios.post('api/login', data, config)
       .then(resp => {
 
         localStorage.setItem('user-token', resp.data);
-        // Here set the header of your ajax library to the token value.
-        // example with axios
         // axios.defaults.headers.common['Authorization'] = resp.token
+
         commit(AUTH_SUCCESS, resp);
-        dispatch(USER_REQUEST);
         resolve(resp);
       })
       .catch(err => {
@@ -48,8 +44,8 @@ const actions = {
   },
   [AUTH_LOGOUT]: ({commit, dispatch}) => {
     return new Promise((resolve, reject) => {
-      commit(AUTH_LOGOUT)
-      localStorage.removeItem('user-token')
+      commit(AUTH_LOGOUT);
+      localStorage.removeItem('user-token');
       resolve()
     })
   }
@@ -60,9 +56,12 @@ const mutations = {
     state.status = 'loading'
   },
   [AUTH_SUCCESS]: (state, resp) => {
+    console.log("successful auth");
+    console.log("state = " + state);
     state.status = 'success';
-    state.token = resp.token;
+    state.token = resp.data;
     state.hasLoadedOnce = true;
+    console.log("state = " + state);
   },
   [AUTH_ERROR]: (state) => {
     state.status = 'error';
