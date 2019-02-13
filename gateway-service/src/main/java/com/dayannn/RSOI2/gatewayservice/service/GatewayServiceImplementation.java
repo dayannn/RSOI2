@@ -87,7 +87,7 @@ public class GatewayServiceImplementation implements GatewayService {
     public void deleteUser(Long userId) throws IOException{
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         HttpDelete request = new HttpDelete(usersServiceUrl + "/users/" + userId);
-        httpClient.execute(request);
+        authAndExecute(usersServiceUrl, request, usersToken);
     }
 
     @Override
@@ -110,61 +110,32 @@ public class GatewayServiceImplementation implements GatewayService {
 
     @Override
     public String getBooksWithReviews() throws IOException, JSONException{
-        String url = booksServiceUrl + "/books";
-        URL website = new URL(url);
-        URLConnection connection = website.openConnection();
-        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF8"));
+        HttpGet request = new HttpGet(booksServiceUrl + "/books");
+        HttpResponse response = authAndExecute(booksServiceUrl, request, booksToken);
 
+        JSONArray books = new JSONArray(EntityUtils.toString(response.getEntity()));
 
-        StringBuilder response = new StringBuilder();
-        String inputLine;
-
-        while ((inputLine = in.readLine()) != null)
-            response.append(inputLine);
-
-        in.close();
-
-        JSONArray books = new JSONArray(response.toString());
-
-        JSONArray jsonArray = new JSONArray();
-
-
-        List<String> temp = new ArrayList<>();
         StringBuilder result = new StringBuilder();
         result.append("[");
         for (int i = 0; i < books.length(); i++) {
-            //get the JSON Object
             JSONObject obj = books.getJSONObject(i);
             String sfname = obj.getString("id");
-            // temp.add(sfname);
 
+            HttpGet request2 = new HttpGet(reviewsServiceUrl + "/reviews/bybook/" + sfname);
+            HttpResponse response2 = authAndExecute(reviewsServiceUrl, request2, reviewsToken);
 
-            url = reviewsServiceUrl +"/reviews/bybook/" + sfname;
-            website = new URL(url);
-            connection = website.openConnection();
-            in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
-            response = new StringBuilder();
+            StringBuilder responseStr = new StringBuilder();
             StringBuilder reviews = new StringBuilder(",\n\"reviews\":\n");
-            response.append(obj);
-            while ((inputLine = in.readLine()) != null)
-                reviews.append(inputLine);
-            in.close();
-            reviews.append("\n");
-            response.insert(response.length()-1, reviews);
+            reviews.append(EntityUtils.toString(response2.getEntity()));
+            responseStr.append(obj);
+            responseStr.insert(responseStr.length()-1, reviews);
             if (i != books.length()-1)
-                response.append(",");
-            //jsonObject = new JSONObject(response.toString());
+                responseStr.append(",");
 
-            result.append(response);
+            result.append(responseStr);
         }
         result.append("]");
         System.out.println();
-
-        // RestTemplate
-        // Jackson / gson
-//        for (String a: temp) {
-//
-//        }
 
         System.out.print(result);
 
@@ -173,7 +144,6 @@ public class GatewayServiceImplementation implements GatewayService {
 
     @Override
     public void addUser(String user) throws IOException{
-        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         HttpPost request = new HttpPost(usersServiceUrl + "/users");
         StringEntity params = new StringEntity(user);
         request.addHeader("content-type", "application/json");
@@ -267,19 +237,11 @@ public class GatewayServiceImplementation implements GatewayService {
     public String getReviewsForBook(Long bookId, PageRequest p) throws IOException{
         String url = reviewsServiceUrl + "/reviews/bybook/" + bookId +
                 "?page=" + p.getPageNumber() + "&size=" + p.getPageSize();
-        URL website = new URL(url);
-        URLConnection connection = website.openConnection();
-        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+        HttpGet request = new HttpGet(reviewsServiceUrl +"/reviews/bybook/"+ bookId +
+                "?page=" + p.getPageNumber() + "&size=" + p.getPageSize());
+        HttpResponse response = authAndExecute(reviewsServiceUrl, request, reviewsToken);
 
-        StringBuilder response = new StringBuilder();
-        String inputLine;
-
-        while ((inputLine = in.readLine()) != null)
-            response.append(inputLine);
-
-        in.close();
-
-        return response.toString();
+        return EntityUtils.toString(response.getEntity());
     }
 
     @Override
@@ -291,10 +253,11 @@ public class GatewayServiceImplementation implements GatewayService {
         return EntityUtils.toString(response.getEntity());
     }
 
-    private String requestToken(String host, String credentials) throws IOException {
+    @Override
+    public String requestToken(String url, String credentials) throws IOException {
         String token = "";
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-        HttpPost request = new HttpPost(host + "/oauth/token?grant_type=client_credentials");
+        HttpPost request = new HttpPost(url);
         request.addHeader("Authorization",
                 "Basic " + credentials);
 
@@ -302,7 +265,7 @@ public class GatewayServiceImplementation implements GatewayService {
         try {
             JSONObject p = new JSONObject(EntityUtils.toString(r.getEntity()));
             token = p.getString("access_token");
-            logger.info("Token received for host " + host + " : " + gatewayToken);
+            logger.info("Token received from url" + url + " : " + gatewayToken);
         } catch (JSONException e) {
             logger.error("Error parsing json ", e);
         }
@@ -316,13 +279,16 @@ public class GatewayServiceImplementation implements GatewayService {
         HttpResponse response = null;
         int i = 0;
         while (i <= 3) {
-            request = new HttpGet(host + "/oauth/check_token?token=" + token); // not the token i need
+            request = new HttpGet(host + "/oauth/check_token?token=" + gatewayToken); // not the token i need
             request.addHeader("Authorization",
                     "Basic " + Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes()));
             response = httpClient.execute(request);
 
-            if (response.getStatusLine().getStatusCode() == 400 || response.getStatusLine().getStatusCode() == 401 || response.getStatusLine().getStatusCode() == 403) {
-                gatewayToken = requestToken(host, token);
+            if (response.getStatusLine().getStatusCode() == 400
+                    || response.getStatusLine().getStatusCode() == 401
+                    || response.getStatusLine().getStatusCode() == 403) {
+                gatewayToken = requestToken(host + "/oauth/token?grant_type=client_credentials",
+                        Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes()));
             } else
                 break;
             i++;
@@ -355,7 +321,7 @@ public class GatewayServiceImplementation implements GatewayService {
             request.addHeader("Authorization", "Bearer " + token);
             response = httpClient.execute(request);
             if (response.getStatusLine().getStatusCode() == 401 || response.getStatusLine().getStatusCode() == 403) {
-                token = (requestToken(host, Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes())));
+                token = (requestToken(host + "/oauth/token?grant_type=client_credentials", Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes())));
             } else
                 //return response;
                 break;

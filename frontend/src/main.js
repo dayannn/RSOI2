@@ -14,10 +14,15 @@ Vue.config.productionTip = false;
 Vue.use(BootstrapVue);
 Vue.use(VueFilterDateFormat);
 
-const token = localStorage.getItem('user-token');
-if (token) {
-    axios.defaults.headers.common['Authorization'] = token
-}
+
+(function() {
+    const token = localStorage.getItem('user-token');
+    if (token) {
+        axios.defaults.headers.common['Authorization'] = token;
+    } else {
+        axios.defaults.headers.common['Authorization'] = "";
+    }
+})();
 
 new Vue({
   router,

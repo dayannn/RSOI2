@@ -37,9 +37,9 @@ public class AuthConfiguration extends AuthorizationServerConfigurerAdapter {
 	@Override
 	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
 		clients.inMemory()
-            .withClient("fooClientId")
-                //.secret("secret")
-                .authorizedGrantTypes("password", "authorization_code", "refresh_token")
+            .withClient("webApp")
+                .secret("webAppSecret")
+                .authorizedGrantTypes("password", "refresh_token")
                 .scopes("read","write")
                 .accessTokenValiditySeconds(AUTH_TOKEN_VALIDITY_SECONDS)
                 .refreshTokenValiditySeconds(REFRESH_TOKEN_VALIDITY_SECONDS)

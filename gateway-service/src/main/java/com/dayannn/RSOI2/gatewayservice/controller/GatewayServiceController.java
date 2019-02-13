@@ -135,4 +135,23 @@ public class GatewayServiceController {
         gatewayService.deleteReview(reviewId);
         return ResponseEntity.ok("");
     }
+
+    @PostMapping(path = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity login(@RequestParam(value = "username") String username, @RequestParam(value = "password") String password, @RequestHeader("Authorization") String clientCred) throws IOException, JSONException {
+
+        logger.info("[GET] /login" +
+                " username=" + username +
+                ", password= " + password +
+                ", credentials= " + clientCred);
+        // Берём токен для клиентского приложения у аут.сервиса
+        //token = token.replace("Bearer ","");
+        String clientToken = "";
+        clientCred = clientCred.replace("Basic", "");
+        // http://localhost:8081/oauth/token?grant_type=password&username=user&password=pass
+        clientToken = gatewayService.requestToken(authServiceUrl + "/oauth/token?grant_type=password&username="+username+"&password="+password, clientCred);
+        if (clientToken.isEmpty())
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+
+        return ResponseEntity.ok(clientToken);
+    }
 }

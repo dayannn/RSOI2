@@ -47,7 +47,7 @@ export default new Router({
             path: '/books',
             name: 'books',
             component: () => import('./views/Books.vue'),
-            beforeEnter: ifAuthenticated
+            beforeEnter: ifNotAuthenticated
         },
         {
             path: '/book/:id',
