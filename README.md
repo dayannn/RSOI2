@@ -1,6 +1,7 @@
 # RSOI2
 ## Лабораторные работы по РСОИ
 ![Travis-ci](https://api.travis-ci.org/dayannn/RSOI2.svg)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d21c885aedf34def940edaf876e68d2f)](https://app.codacy.com/app/dayannn/RSOI2?utm_source=github.com&utm_medium=referral&utm_content=dayannn/RSOI2&utm_campaign=Badge_Grade_Dashboard)
 [![codecov](https://codecov.io/gh/dayannn/RSOI2/branch/master/graph/badge.svg)](https://codecov.io/gh/dayannn/RSOI2)
 
 ### Настройка БД
