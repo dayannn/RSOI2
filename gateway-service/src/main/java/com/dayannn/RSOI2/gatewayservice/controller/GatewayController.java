@@ -17,13 +17,13 @@ import java.io.IOException;
 @RestController
 @Slf4j
 @RequestMapping("/api")
-public class GatewayServiceController {
+public class GatewayController {
     private final GatewayService gatewayService;
     final private String authServiceUrl = "http://localhost:8081";
-    private Logger logger = LoggerFactory.getLogger(GatewayServiceController.class);
+    private Logger logger = LoggerFactory.getLogger(GatewayController.class);
 
     @Autowired
-    public GatewayServiceController(GatewayService gatewayService){
+    public GatewayController(GatewayService gatewayService){
         this.gatewayService = gatewayService;
     }
 

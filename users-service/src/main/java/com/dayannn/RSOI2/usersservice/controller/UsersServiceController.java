@@ -15,12 +15,11 @@ import java.util.List;
 @Slf4j
 public class UsersServiceController {
     private UsersService usersService;
-    private Logger logger;
+    private Logger logger = LoggerFactory.getLogger(UsersServiceController.class);
 
     @Autowired
     UsersServiceController(UsersService usersService){
         this.usersService = usersService;
-        logger = LoggerFactory.getLogger(UsersServiceController.class);
     }
 
     @PostMapping(value = "/users")

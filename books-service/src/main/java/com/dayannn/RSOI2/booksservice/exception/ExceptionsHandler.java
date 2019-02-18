@@ -12,11 +12,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ControllerAdvice
 @Slf4j
 public class ExceptionsHandler {
-    private Logger logger;
+    private Logger logger = LoggerFactory.getLogger(ExceptionsHandler.class);
 
-    public ExceptionsHandler() {
-        logger = LoggerFactory.getLogger(ExceptionsHandler.class);
-    }
+    public ExceptionsHandler() { }
 
     @ResponseBody
     @ExceptionHandler(BookNotFoundException.class)

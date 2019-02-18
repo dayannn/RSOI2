@@ -17,12 +17,11 @@ import java.util.List;
 @Slf4j
 public class ReviewsServiceController {
     private ReviewsService reviewsService;
-    private Logger logger;
+    private Logger logger = LoggerFactory.getLogger(ReviewsServiceController.class);
 
     @Autowired
     ReviewsServiceController(ReviewsService reviewsService){
         this.reviewsService = reviewsService;
-        logger = LoggerFactory.getLogger(ReviewsServiceController.class);
     }
 
     @PostMapping(value = "/reviews")

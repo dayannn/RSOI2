@@ -16,12 +16,11 @@ import java.util.List;
 @Slf4j
 public class BooksServiceController {
     private final BooksService booksService;
-    Logger logger;
+    private Logger logger = LoggerFactory.getLogger(BooksServiceImpl.class);
 
     @Autowired
     public BooksServiceController(BooksService booksService){
         this.booksService = booksService;
-        logger  = LoggerFactory.getLogger(BooksServiceImpl.class);
     }
 
     @PostMapping(value = "/books")

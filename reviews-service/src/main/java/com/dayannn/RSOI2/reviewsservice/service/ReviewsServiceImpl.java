@@ -39,8 +39,7 @@ public class ReviewsServiceImpl implements ReviewsService {
 
     @Override
     public List<Review> getReviewsByUser(Long userId) {
-        List<Review> reviews = reviewsRepository.findByUidOrderByPostedTimeDesc(userId);
-        return reviews;
+        return reviewsRepository.findByUidOrderByPostedTimeDesc(userId);
     }
 
 
