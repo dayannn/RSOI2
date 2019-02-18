@@ -4,7 +4,7 @@ import com.dayannn.RSOI2.booksservice.entity.Book;
 import com.dayannn.RSOI2.booksservice.exception.BookNotFoundException;
 import com.dayannn.RSOI2.booksservice.repository.BooksRepository;
 import com.dayannn.RSOI2.booksservice.service.BooksService;
-import com.dayannn.RSOI2.booksservice.service.BooksServiceImplementation;
+import com.dayannn.RSOI2.booksservice.service.BooksServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -30,7 +30,7 @@ public class BooksServiceTest {
     @Before
     public void setUp(){
         initMocks(this);
-        booksService = new BooksServiceImplementation(booksRepository);
+        booksService = new BooksServiceImpl(booksRepository);
     }
 
     @Test

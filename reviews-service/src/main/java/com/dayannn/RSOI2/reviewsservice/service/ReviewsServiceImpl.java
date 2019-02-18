@@ -17,11 +17,11 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class ReviewsServiceImplementation implements ReviewsService {
+public class ReviewsServiceImpl implements ReviewsService {
     private final ReviewsRepository reviewsRepository;
 
     @Autowired
-    public ReviewsServiceImplementation(ReviewsRepository reviewsRepository){
+    public ReviewsServiceImpl(ReviewsRepository reviewsRepository){
         this.reviewsRepository = reviewsRepository;
     }
 

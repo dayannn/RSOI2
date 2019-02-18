@@ -11,10 +11,10 @@ import java.util.List;
 
 
 @Service
-public class BooksServiceImplementation implements BooksService {
+public class BooksServiceImpl implements BooksService {
     private final BooksRepository booksRepository;
     @Autowired
-    public BooksServiceImplementation(BooksRepository booksRepository){
+    public BooksServiceImpl(BooksRepository booksRepository){
         this.booksRepository = booksRepository;
     }
 

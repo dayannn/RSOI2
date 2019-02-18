@@ -20,11 +20,10 @@ import java.io.IOException;
 public class GatewayServiceController {
     private final GatewayService gatewayService;
     final private String authServiceUrl = "http://localhost:8081";
-    private Logger logger;
+    private Logger logger = LoggerFactory.getLogger(GatewayServiceController.class);
 
     @Autowired
     public GatewayServiceController(GatewayService gatewayService){
-        logger = LoggerFactory.getLogger(GatewayServiceController.class);
         this.gatewayService = gatewayService;
     }
 
@@ -138,29 +137,35 @@ public class GatewayServiceController {
     }
 
     @PostMapping(path = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity login(@RequestParam(value = "username") String username, @RequestParam(value = "password") String password, @RequestHeader("Authorization") String clientCred) throws IOException, JSONException {
-
+    public ResponseEntity login(@RequestParam(value = "username") String username,
+                                @RequestParam(value = "password") String password,
+                                @RequestHeader("Authorization") String clientCred) throws IOException{
         logger.info("[GET] /login" +
                 " username=" + username +
                 ", password= " + password +
                 ", credentials= " + clientCred);
 
-        String clientToken;
         clientCred = clientCred.replace("Basic", "");
-        clientToken = gatewayService.requestToken(authServiceUrl + "/oauth/token?grant_type=password&username="+username+"&password="+password, clientCred);
+        String token = gatewayService.requestToken(authServiceUrl +
+                "/oauth/token?grant_type=password&username=" + username +
+                "&password=" + password,
+                clientCred);
 
-        if (clientToken.isEmpty())
+        if (token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
 
-        return ResponseEntity.ok(clientToken);
+        return ResponseEntity.ok(token);
     }
 
     @GetMapping(path = "/oauth/login", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity oauthLogin(
-            @RequestParam(value = "client_id") String clientId,
-            @RequestParam(value = "redirect_uri") String redirectUri) throws IOException {
+            @RequestParam(value = "clientId") String clientId,
+            @RequestParam(value = "redirectUri") String redirectUri) throws IOException {
 
-        logger.info("[GET] /oauth/login");
+        logger.info("[GET] /oauth/login" +
+                ", clientId= " + clientId +
+                ", redirectUri= " + redirectUri);
 
         String r = gatewayService.oauthGetCode(authServiceUrl, clientId, redirectUri, "code");
         HttpHeaders headers = new HttpHeaders();
@@ -172,13 +177,15 @@ public class GatewayServiceController {
     @GetMapping(path = "/oauth/token", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity oauthToken(
             @RequestParam(value = "code") String code,
-            @RequestParam(value = "redirect_uri") String redirectUri,
+            @RequestParam(value = "redirectUri") String redirectUri,
             @RequestHeader("Authorization") String clientCred) throws IOException{
 
-        logger.info("[GET] /oauth/token");
+        logger.info("[GET] /oauth/token" +
+                ", code= " + code +
+                ", redirectUri= " + redirectUri +
+                ", clientCred= " + clientCred);
 
         clientCred = clientCred.replace("Basic","");
-
         String r = gatewayService.oauthExchangeCode(authServiceUrl, code, redirectUri, clientCred);
 
         return ResponseEntity.ok(r);
