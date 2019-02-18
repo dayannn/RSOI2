@@ -12,7 +12,7 @@ import javax.persistence.Table;
 @Table(name="users")
 public class UserInfo implements Serializable {
 	private static final long serialVersionUID = 1L;
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "id", length = 25)
@@ -20,16 +20,16 @@ public class UserInfo implements Serializable {
 
 	@Column(name="username",length=50,nullable=false)
 	private String userName;
-	
+
 	@Column(name="password",length=800,nullable=false)
 	private String password;
-	
-	@Column(name="role",length=50)	
+
+	@Column(name="role",length=50)
 	private String role;
-	
-	@Column(name="enabled")	
+
+	@Column(name="enabled")
 	private short enabled;
-	
+
 	public String getUserName() {
 		return userName;
 	}

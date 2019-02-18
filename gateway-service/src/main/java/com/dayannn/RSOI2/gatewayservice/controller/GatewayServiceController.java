@@ -144,12 +144,11 @@ public class GatewayServiceController {
                 " username=" + username +
                 ", password= " + password +
                 ", credentials= " + clientCred);
-        // Берём токен для клиентского приложения у аут.сервиса
-        //token = token.replace("Bearer ","");
-        String clientToken = "";
+
+        String clientToken;
         clientCred = clientCred.replace("Basic", "");
-        // http://localhost:8081/oauth/token?grant_type=password&username=user&password=pass
         clientToken = gatewayService.requestToken(authServiceUrl + "/oauth/token?grant_type=password&username="+username+"&password="+password, clientCred);
+
         if (clientToken.isEmpty())
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 
@@ -158,12 +157,12 @@ public class GatewayServiceController {
 
     @GetMapping(path = "/oauth/login", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity oauthLogin(
-            @RequestParam(value = "client_id") String client_id,
-            @RequestParam(value = "redirect_uri") String redirect_uri) throws IOException, JSONException {
+            @RequestParam(value = "client_id") String clientId,
+            @RequestParam(value = "redirect_uri") String redirectUri) throws IOException {
 
         logger.info("[GET] /oauth/login");
 
-        String r = gatewayService.oauthGetCode(authServiceUrl, client_id, redirect_uri, "code");
+        String r = gatewayService.oauthGetCode(authServiceUrl, clientId, redirectUri, "code");
         HttpHeaders headers = new HttpHeaders();
         headers.add("Location", r);
         return new ResponseEntity<String>(headers, HttpStatus.FOUND);
@@ -173,14 +172,14 @@ public class GatewayServiceController {
     @GetMapping(path = "/oauth/token", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity oauthToken(
             @RequestParam(value = "code") String code,
-            @RequestParam(value = "redirect_uri") String redirect_uri,
-            @RequestHeader("Authorization") String client_cred) throws IOException, JSONException {
+            @RequestParam(value = "redirect_uri") String redirectUri,
+            @RequestHeader("Authorization") String clientCred) throws IOException{
 
         logger.info("[GET] /oauth/token");
 
-        client_cred = client_cred.replace("Basic","");
+        clientCred = clientCred.replace("Basic","");
 
-        String r = gatewayService.oauthExchangeCode(authServiceUrl, code, redirect_uri, client_cred);
+        String r = gatewayService.oauthExchangeCode(authServiceUrl, code, redirectUri, clientCred);
 
         return ResponseEntity.ok(r);
     }

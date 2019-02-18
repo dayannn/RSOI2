@@ -25,7 +25,7 @@ public class AuthConfiguration extends AuthorizationServerConfigurerAdapter {
 	@Autowired
 	@Qualifier("authenticationManagerBean")
 	private AuthenticationManager authenticationManager;
-	
+
 	@Autowired
 	private UserDetailsService userDetailsService;
 
@@ -40,38 +40,37 @@ public class AuthConfiguration extends AuthorizationServerConfigurerAdapter {
             .withClient("webApp")
                 .secret("webAppSecret")
                 .authorizedGrantTypes("password", "refresh_token")
+                .authorities("ROLE_CLIENT", "ROLE_TRUSTED_CLIENT")
                 .scopes("read","write")
                 .accessTokenValiditySeconds(AUTH_TOKEN_VALIDITY_SECONDS)
                 .refreshTokenValiditySeconds(REFRESH_TOKEN_VALIDITY_SECONDS)
-                .autoApprove(true)
         .and()
             .withClient("gatewayService")
                 .secret("gatewaySecret")
                 .authorizedGrantTypes("client_credentials")
+                .authorities("ROLE_CLIENT", "ROLE_TRUSTED_CLIENT")
                 .scopes("read", "write")
                 .accessTokenValiditySeconds(AUTH_TOKEN_VALIDITY_SECONDS)
-                .autoApprove(true)
         .and()
-            .withClient("third-party-app")
+            .withClient("application")
                 .secret("secret")
                 .authorizedGrantTypes("authorization_code", "refresh_token")
+                .authorities("ROLE_CLIENT")
                 .scopes("read", "write")
                 .accessTokenValiditySeconds(AUTH_TOKEN_VALIDITY_SECONDS)
-                .refreshTokenValiditySeconds(REFRESH_TOKEN_VALIDITY_SECONDS)
-                .autoApprove(true);
+                .refreshTokenValiditySeconds(REFRESH_TOKEN_VALIDITY_SECONDS);
 	}
 
     @Override
     public void configure(final AuthorizationServerEndpointsConfigurer endpoints) {
-    	endpoints.tokenStore(tokenStore()).authenticationManager(authenticationManager)
+	    endpoints.tokenStore(tokenStore()).authenticationManager(authenticationManager)
                 .accessTokenConverter(defaultAccessTokenConverter())
                 .userDetailsService(userDetailsService);
-	//	endpoints.authenticationManager(authenticationManager);
     }
 
 	@Bean
 	public TokenStore tokenStore(){
-		return new JwtTokenStore(defaultAccessTokenConverter());	
+		return new JwtTokenStore(defaultAccessTokenConverter());
 	}
 
 	@Bean
