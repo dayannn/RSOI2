@@ -9,11 +9,17 @@
             <router-link to="/books">Книги</router-link>
             <router-link to="/users">Пользователи</router-link>
             <router-link to="/about">О сайте</router-link>
+            <b-button
+                    v-if="(this.$store.getters.isAuthenticated)"
+                    v-on:click="doLogOut">
+                Logout
+            </b-button>
         </div>
     </div>
 </template>
 
 <script>
+    import { AUTH_LOGOUT } from '../../store/actions/auth';
     export default{
         name: "Header",
         data () {
@@ -24,6 +30,9 @@
         methods: {
             handleScroll () {
                 this.scrolled = window.scrollY > 0;
+            },
+            doLogOut(){
+                this.$store.dispatch(AUTH_LOGOUT).then(() => this.$router.push('/login'));
             }
         },
         created () {

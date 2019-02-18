@@ -12,6 +12,11 @@
       components:{Header},
       comments:{
           Header
+      },
+      created: function () {
+          if (this.$store.getters.isAuthenticated) {
+              //this.$store.dispatch(USER_REQUEST)
+          }
       }
   }
 </script>

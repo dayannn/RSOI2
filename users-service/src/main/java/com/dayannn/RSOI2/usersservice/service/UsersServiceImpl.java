@@ -9,11 +9,11 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class UsersServiceImplementation implements UsersService{
+public class UsersServiceImpl implements UsersService{
     private final UsersRepository usersRepository;
 
     @Autowired
-    public UsersServiceImplementation(UsersRepository usersRepository) {
+    public UsersServiceImpl(UsersRepository usersRepository) {
         this.usersRepository = usersRepository;
     }
 

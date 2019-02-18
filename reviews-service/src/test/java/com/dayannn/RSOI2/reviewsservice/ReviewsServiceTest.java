@@ -3,12 +3,11 @@ package com.dayannn.RSOI2.reviewsservice;
 import com.dayannn.RSOI2.reviewsservice.entity.Review;
 import com.dayannn.RSOI2.reviewsservice.repository.ReviewsRepository;
 import com.dayannn.RSOI2.reviewsservice.service.ReviewsService;
-import com.dayannn.RSOI2.reviewsservice.service.ReviewsServiceImplementation;
+import com.dayannn.RSOI2.reviewsservice.service.ReviewsServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import java.awt.print.Book;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +25,7 @@ public class ReviewsServiceTest {
     @Before
     public void setUp(){
         initMocks(this);
-        reviewsService = new ReviewsServiceImplementation(reviewsRepository);
+        reviewsService = new ReviewsServiceImpl(reviewsRepository);
     }
 
     @Test

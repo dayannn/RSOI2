@@ -4,7 +4,7 @@ import com.dayannn.RSOI2.usersservice.entity.User;
 import com.dayannn.RSOI2.usersservice.exception.UserNotFoundException;
 import com.dayannn.RSOI2.usersservice.repository.UsersRepository;
 import com.dayannn.RSOI2.usersservice.service.UsersService;
-import com.dayannn.RSOI2.usersservice.service.UsersServiceImplementation;
+import com.dayannn.RSOI2.usersservice.service.UsersServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -27,7 +27,7 @@ public class UsersServiceTest {
     @Before
     public void setUp(){
         initMocks(this);
-        usersService = new UsersServiceImplementation(usersRepository);
+        usersService = new UsersServiceImpl(usersRepository);
     }
 
     @Test

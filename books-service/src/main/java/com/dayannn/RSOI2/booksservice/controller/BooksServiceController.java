@@ -3,7 +3,7 @@ package com.dayannn.RSOI2.booksservice.controller;
 import com.dayannn.RSOI2.booksservice.entity.Book;
 import com.dayannn.RSOI2.booksservice.exception.BookNotFoundException;
 import com.dayannn.RSOI2.booksservice.service.BooksService;
-import com.dayannn.RSOI2.booksservice.service.BooksServiceImplementation;
+import com.dayannn.RSOI2.booksservice.service.BooksServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,12 +16,11 @@ import java.util.List;
 @Slf4j
 public class BooksServiceController {
     private final BooksService booksService;
-    Logger logger;
+    private Logger logger = LoggerFactory.getLogger(BooksServiceImpl.class);
 
     @Autowired
     public BooksServiceController(BooksService booksService){
         this.booksService = booksService;
-        logger  = LoggerFactory.getLogger(BooksServiceImplementation.class);
     }
 
     @PostMapping(value = "/books")

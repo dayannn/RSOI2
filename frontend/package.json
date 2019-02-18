@@ -9,13 +9,15 @@
   },
   "dependencies": {
     "ajv": "^6.7.0",
+    "auth0-js": "^9.9.0",
     "axios": "^0.18.0",
     "bootstrap-vue": "^2.0.0-rc.11",
     "vue": "^2.5.21",
     "vue-dynamic-star-rating": "^1.0.7",
     "vue-filter-date-format": "^1.1.5",
     "vue-router": "^3.0.1",
-    "vue-truncate-collapsed": "^2.1.0"
+    "vue-truncate-collapsed": "^2.1.0",
+    "vuex": "^3.1.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.3.0",
