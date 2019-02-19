@@ -51,15 +51,19 @@ public class GatewayServiceImpl implements GatewayService {
 
     private Jedis jedis = new Jedis("127.0.0.1", 6379);
     private JedisManager jedisManager = new JedisManager(jedis);
-    private WorkThread workThread = new WorkThread(jedis);
+    //private WorkThread workThread = new WorkThread(jedis);
 
-    HttpResponseFactory responseFactory= new DefaultHttpResponseFactory();
+    private HttpResponseFactory responseFactory= new DefaultHttpResponseFactory();
 
     @Value("${clientId}")
     private String clientId;
 
     @Value("${clientSecret}")
     private String clientSecret;
+
+    public GatewayServiceImpl() {
+        //workThread.start();
+    }
 
     public String getGatewayToken() {
         return gatewayToken;
@@ -170,7 +174,7 @@ public class GatewayServiceImpl implements GatewayService {
         try {
             JSONObject reviewJson = new JSONObject(review);
             double reviewRating = reviewJson.getDouble("rating");
-            if (Math.abs(reviewRating) < 1 || reviewRating > 5){
+            if (reviewRating + EPS < 1 || reviewRating - EPS > 5){
                 result.put("error", invalidFieldError("rating"));
                 return ResponseEntity.status(HttpStatus.SC_BAD_REQUEST).body(result.toString());
             }
@@ -184,7 +188,8 @@ public class GatewayServiceImpl implements GatewayService {
         request.setEntity(params);
         HttpResponse response = authAndExecute(REVIEWS_SERVICE_URL, request, reviewsToken);
         if (response.getStatusLine().getStatusCode() != 200){
-            return ResponseEntity.status(response.getStatusLine().getStatusCode()).body(response.getStatusLine().getReasonPhrase());
+            return ResponseEntity.status(response.getStatusLine().getStatusCode())
+                    .body(EntityUtils.toString(response.getEntity()));
         }
 
         String createdReviewId = EntityUtils.toString(response.getEntity());
@@ -206,7 +211,7 @@ public class GatewayServiceImpl implements GatewayService {
             HttpResponse responseRollBack = authAndExecute(REVIEWS_SERVICE_URL, requestRollBack, reviewsToken);
 
             return ResponseEntity.status(response1.getStatusLine().getStatusCode())
-                    .body(response1.getStatusLine().getReasonPhrase());
+                    .body(EntityUtils.toString(response1.getEntity()));
         }
         HttpPost requestRollBack2 = new HttpPost(BOOKS_SERVICE_URL + "/books/" + bookId + "/delete_review");
 
@@ -217,7 +222,7 @@ public class GatewayServiceImpl implements GatewayService {
             HttpResponse responseRollBack2 = authAndExecute(BOOKS_SERVICE_URL, requestRollBack2, booksToken);
 
             return ResponseEntity.status(response2.getStatusLine().getStatusCode())
-                    .body(response2.getStatusLine().getReasonPhrase());
+                    .body(EntityUtils.toString(response2.getEntity()));
         }
 
         double averageRating;
@@ -246,6 +251,9 @@ public class GatewayServiceImpl implements GatewayService {
 
             HttpPost requestRollback4 = new HttpPost(BOOKS_SERVICE_URL + "/books/" + bookId +"/setRating/" + String.valueOf(averageRatingRollback));
             HttpResponse responseRollback4 = authAndExecute(BOOKS_SERVICE_URL, requestRollback4, booksToken);
+
+            return ResponseEntity.status(response3.getStatusLine().getStatusCode())
+                    .body(EntityUtils.toString(response3.getEntity()));
         }
 
         try {
@@ -266,6 +274,8 @@ public class GatewayServiceImpl implements GatewayService {
         return rating / revsArray.length();
     }
 
+
+    // Очередь
     @Override
     public void deleteReview(Long reviewId){
         try{

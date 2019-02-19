@@ -148,8 +148,7 @@ public class GatewayController {
                     .body(EntityUtils.toString(response.getEntity()));
         }
 
-        gatewayService.createReview(review);
-        return ResponseEntity.ok("");
+        return gatewayService.createReview(review);
     }
 
     @DeleteMapping(value = "/reviews/{reviewId}")
