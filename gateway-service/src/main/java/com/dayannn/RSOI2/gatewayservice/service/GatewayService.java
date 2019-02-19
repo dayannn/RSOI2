@@ -15,7 +15,7 @@ public interface GatewayService {
     String getUsers() throws IOException;
     String getUserById(Long userId) throws IOException;
     String getReviewsByUser(Long userId) throws IOException;
-    String getBooksWithReviews() throws IOException, JSONException;
+    ResponseEntity getBooksWithReviews() throws IOException, JSONException;
     String getReviewsForBook(Long bookId, PageRequest p) throws IOException;
     String getBookById(Long bookId) throws IOException;
     void addUser(String user) throws IOException;

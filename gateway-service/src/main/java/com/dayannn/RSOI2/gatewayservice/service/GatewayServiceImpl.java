@@ -112,10 +112,14 @@ public class GatewayServiceImpl implements GatewayService {
     }
 
     @Override
-    public String getBooksWithReviews() throws IOException, JSONException{
+    public ResponseEntity getBooksWithReviews() throws IOException, JSONException{
         HttpGet request = new HttpGet(booksServiceUrl + "/books");
         HttpResponse response = authAndExecute(booksServiceUrl, request, booksToken);
 
+        if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
+            return ResponseEntity.status(response.getStatusLine().getStatusCode())
+                    .body(EntityUtils.toString(response.getEntity()));
+        }
         JSONArray books = new JSONArray(EntityUtils.toString(response.getEntity()));
 
         StringBuilder result = new StringBuilder();
@@ -128,10 +132,13 @@ public class GatewayServiceImpl implements GatewayService {
             HttpResponse response2 = authAndExecute(reviewsServiceUrl, request2, reviewsToken);
 
             StringBuilder responseStr = new StringBuilder();
-            StringBuilder reviews = new StringBuilder(",\n\"reviews\":\n");
-            reviews.append(EntityUtils.toString(response2.getEntity()));
             responseStr.append(obj);
-            responseStr.insert(responseStr.length()-1, reviews);
+            if (response2.getStatusLine().getStatusCode() == HttpStatus.SC_OK){
+                StringBuilder reviews = new StringBuilder(",\n\"reviews\":\n");
+                reviews.append(EntityUtils.toString(response2.getEntity()));
+
+                responseStr.insert(responseStr.length()-1, reviews);
+            }
             if (i != books.length()-1)
                 responseStr.append(",");
 
@@ -142,7 +149,7 @@ public class GatewayServiceImpl implements GatewayService {
 
         System.out.print(result);
 
-        return result.toString();
+        return ResponseEntity.ok(result);
     }
 
     @Override
@@ -322,10 +329,11 @@ public class GatewayServiceImpl implements GatewayService {
             return response;
         }
         catch(HttpHostConnectException ex){
-            response.setStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
             JSONObject answer = new JSONObject();
             try {
                 answer.put("error", "Service " + host + " is not available at the moment");
+                response.setEntity(new StringEntity(answer.toString()));
+                response.setStatusCode(HttpStatus.SC_SERVICE_UNAVAILABLE);
             } catch (JSONException e) {
                 logger.error("Error parsing json ", e);
             }

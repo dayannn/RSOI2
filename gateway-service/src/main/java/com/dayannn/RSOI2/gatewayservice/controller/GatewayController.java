@@ -136,7 +136,7 @@ public class GatewayController {
                     .body(EntityUtils.toString(response.getEntity()));
         }
 
-        return ResponseEntity.ok(gatewayService.getBooksWithReviews());
+        return gatewayService.getBooksWithReviews();
     }
 
     @PostMapping(value = "/reviews")
