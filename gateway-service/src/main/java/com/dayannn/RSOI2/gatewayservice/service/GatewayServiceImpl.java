@@ -176,24 +176,15 @@ public class GatewayServiceImpl implements GatewayService {
     @Override
     public void deleteReview(Long reviewId){
         try{
-            String url = reviewsServiceUrl + "/reviews/" + reviewId;
-            URL website = new URL(url);
-            URLConnection connection = website.openConnection();
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF8"));
+            HttpGet request = new HttpGet(reviewsServiceUrl + "/reviews/" + reviewId);
+            HttpResponse response = authAndExecute(reviewsServiceUrl, request, reviewsToken);
 
-
-            StringBuilder book = new StringBuilder();
-            String inputLine;
-
-            while ((inputLine = in.readLine()) != null)
-                book.append(inputLine);
-            in.close();
-            JSONObject obj = new JSONObject(book.toString());
+            String book = EntityUtils.toString(response.getEntity(), "UTF-8");
+            JSONObject obj = new JSONObject(book);
             Long bookId = obj.getLong("bookId");
 
-
-            HttpDelete request = new HttpDelete(reviewsServiceUrl + "/reviews/" + reviewId);
-            authAndExecute(reviewsServiceUrl, request, reviewsToken);
+            HttpDelete request1 = new HttpDelete(reviewsServiceUrl + "/reviews/" + reviewId);
+            authAndExecute(reviewsServiceUrl, request1, reviewsToken);
 
             HttpPost request3 = new HttpPost(booksServiceUrl + "/books/" + bookId + "/delete_review");
             authAndExecute(booksServiceUrl, request3, booksToken);
