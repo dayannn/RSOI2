@@ -7,6 +7,7 @@ import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -70,5 +71,10 @@ public class ReviewsServiceImpl implements ReviewsService {
     @Override
     public Review getReviewById(Long id) throws ReviewNotFoundException {
         return reviewsRepository.findById(id).orElseThrow(() -> new ReviewNotFoundException(id));
+    }
+
+    @Override
+    public ResponseEntity healthCheck() {
+        return ResponseEntity.ok("The reviewsService is up");
     }
 }

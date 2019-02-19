@@ -1,10 +1,13 @@
 package com.dayannn.RSOI2.gatewayservice.service;
 
+import com.dayannn.RSOI2.gatewayservice.jedis.JedisManager;
+import com.dayannn.RSOI2.gatewayservice.jedis.WorkThread;
 import org.apache.http.*;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.DefaultHttpResponseFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -18,8 +21,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
+import redis.clients.jedis.Jedis;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,19 +34,27 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.OK;
+
 @Service
 public class GatewayServiceImpl implements GatewayService {
+    private Logger logger = LoggerFactory.getLogger(GatewayServiceImpl.class);
+
     final private String reviewsServiceUrl = "http://localhost:8070";
     final private String booksServiceUrl = "http://localhost:8071";
     final private String usersServiceUrl = "http://localhost:8072";
-
 
     private String gatewayToken = "";
     private String booksToken = "";
     private String reviewsToken = "";
     private String usersToken = "";
 
-    private Logger logger = LoggerFactory.getLogger(GatewayServiceImpl.class);
+    private Jedis jedis = new Jedis("127.0.0.1", 6379);
+    private JedisManager jedisManager = new JedisManager(jedis);
+    private WorkThread workThread = new WorkThread(jedis);
+
+    HttpResponseFactory responseFactory= new DefaultHttpResponseFactory();
 
     @Value("${clientId}")
     private String clientId;
@@ -225,26 +238,24 @@ public class GatewayServiceImpl implements GatewayService {
     }
 
     @Override
-    public String requestToken(String url, String credentials) throws IOException {
-        String token = "";
+    public HttpResponse requestToken(String url, String credentials) throws IOException {
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         HttpPost request = new HttpPost(url);
         request.addHeader("Authorization",
                 "Basic " + credentials);
 
-        HttpResponse r = httpClient.execute(request);
-        try {
-            JSONObject p = new JSONObject(EntityUtils.toString(r.getEntity()));
-            token = p.getString("access_token");
-            logger.info("Token received from url" + url + " : " + gatewayToken);
-        } catch (JSONException e) {
-            logger.error("Error parsing json ", e);
-        }
-        return token;
+//        HttpResponse response = responseFactory.newHttpResponse(HttpVersion.HTTP_1_1, HttpStatus.SC_OK, null);
+
+//        JSONObject p = new JSONObject(EntityUtils.toString(r.getEntity()));
+//        token = p.getString("access_token");
+
+        logger.info("Token received from url" + url + " : " + gatewayToken);
+        return httpClient.execute(request);
+
     }
 
     @Override
-    public boolean checkToken(String host, String token) throws IOException {
+    public HttpResponse checkToken(String host, String token) throws IOException {
         HttpGet request;
         HttpResponse response;
 
@@ -256,7 +267,19 @@ public class GatewayServiceImpl implements GatewayService {
         if (response.getStatusLine().getStatusCode() == 400
                 || response.getStatusLine().getStatusCode() == 401
                 || response.getStatusLine().getStatusCode() == 403) {
-            gatewayToken = requestToken(host + "/oauth/token?grant_type=client_credentials", encodedCredentials);
+            HttpResponse httpResponse = requestToken(host + "/oauth/token?grant_type=client_credentials", encodedCredentials);
+            if (httpResponse.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
+                return httpResponse;
+            }
+            else {
+                try {
+                    JSONObject p = new JSONObject(EntityUtils.toString(httpResponse.getEntity()));
+                    gatewayToken = p.getString("access_token");
+                } catch (JSONException e) {
+                    logger.error("Error parsing response ", e);
+                    return responseFactory.newHttpResponse(HttpVersion.HTTP_1_1, HttpStatus.SC_INTERNAL_SERVER_ERROR, null);
+                }
+            }
             request = new HttpGet(host + "/oauth/check_token?token=" + gatewayToken);
             response = tryGetResponse(request, "Basic", encodedCredentials);
         }
@@ -265,14 +288,15 @@ public class GatewayServiceImpl implements GatewayService {
             JSONObject p = new JSONObject(EntityUtils.toString(response.getEntity()));
             boolean active = p.getBoolean("active");
             if (active) {
-                return true;
+                return responseFactory.newHttpResponse(HttpVersion.HTTP_1_1, HttpStatus.SC_OK, null);
             }
         } catch (JSONException e) {
             logger.error("Error parsing json ", e);
+            return responseFactory.newHttpResponse(HttpVersion.HTTP_1_1, HttpStatus.SC_INTERNAL_SERVER_ERROR, null);
         }
 
         logger.error("Unchecked error while checking token");
-        return false;
+        return responseFactory.newHttpResponse(HttpVersion.HTTP_1_1, HttpStatus.SC_FORBIDDEN, null);
     }
 
     private HttpResponse tryGetResponse(HttpUriRequest request, String authType, String credentials) throws IOException {
@@ -285,13 +309,31 @@ public class GatewayServiceImpl implements GatewayService {
 
 
     private HttpResponse authAndExecute(String host, HttpUriRequest request, String token) throws IOException {
-        HttpResponse response = tryGetResponse(request, "Bearer", token);
-        if (response.getStatusLine().getStatusCode() == 401 || response.getStatusLine().getStatusCode() == 403) {
-            token = (requestToken(host + "/oauth/token?grant_type=client_credentials", Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes())));
-            response = tryGetResponse(request, "Bearer", token);
-        }
+        HttpResponse response = responseFactory.newHttpResponse(HttpVersion.HTTP_1_1, HttpStatus.SC_BAD_REQUEST, null);
 
-        return response;
+        try {
+            response = tryGetResponse(request, "Bearer", token);
+            if (response.getStatusLine().getStatusCode() == 401 || response.getStatusLine().getStatusCode() == 403) {
+                HttpResponse httpResponse = requestToken(host + "/oauth/token?grant_type=client_credentials", Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes()));
+                JSONObject p = new JSONObject(EntityUtils.toString(httpResponse.getEntity()));
+                token = p.getString("access_token");;
+                response = tryGetResponse(request, "Bearer", token);
+            }
+            return response;
+        }
+        catch(HttpHostConnectException ex){
+            response.setStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+            JSONObject answer = new JSONObject();
+            try {
+                answer.put("error", "Service " + host + " is not available at the moment");
+            } catch (JSONException e) {
+                logger.error("Error parsing json ", e);
+            }
+            return response;
+        } catch (JSONException e) {
+            logger.error("Error parsing response ", e);
+            return responseFactory.newHttpResponse(HttpVersion.HTTP_1_1, HttpStatus.SC_INTERNAL_SERVER_ERROR, null);
+        }
     }
 
     @Override

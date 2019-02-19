@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -73,5 +74,11 @@ public class ReviewsServiceController {
     public void deleteReviewsByBook(@PathVariable Long bookId) {
         logger.info("[DELETE] /reviews/bybook/" + bookId);
         reviewsService.deleteReviewsByBook(bookId);
+    }
+
+    @GetMapping(value = "/healthcheck")
+    public ResponseEntity healthCheck(){
+        logger.info("[GET] /healthcheck");
+        return reviewsService.healthCheck();
     }
 }
