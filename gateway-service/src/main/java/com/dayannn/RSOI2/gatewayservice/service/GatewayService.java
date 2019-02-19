@@ -19,7 +19,7 @@ public interface GatewayService {
     String getReviewsForBook(Long bookId, PageRequest p) throws IOException;
     String getBookById(Long bookId) throws IOException;
     void addUser(String user) throws IOException;
-    void createReview(String review) throws IOException;
+    ResponseEntity createReview(String review) throws IOException;
     void deleteReview(Long reviewId) throws IOException;
     void deleteUser(Long id) throws IOException;
     HttpResponse requestToken(String url, String credentials) throws IOException;

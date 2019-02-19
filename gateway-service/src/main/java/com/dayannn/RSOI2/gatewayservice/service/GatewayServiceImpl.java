@@ -3,6 +3,7 @@ package com.dayannn.RSOI2.gatewayservice.service;
 import com.dayannn.RSOI2.gatewayservice.jedis.JedisManager;
 import com.dayannn.RSOI2.gatewayservice.jedis.WorkThread;
 import org.apache.http.*;
+import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -12,7 +13,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.DefaultHttpResponseFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicStatusLine;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,16 +34,15 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.OK;
-
 @Service
 public class GatewayServiceImpl implements GatewayService {
     private Logger logger = LoggerFactory.getLogger(GatewayServiceImpl.class);
 
-    final private String reviewsServiceUrl = "http://localhost:8070";
-    final private String booksServiceUrl = "http://localhost:8071";
-    final private String usersServiceUrl = "http://localhost:8072";
+    final private double EPS = 10e-5;
+
+    final private String REVIEWS_SERVICE_URL = "http://localhost:8070";
+    final private String BOOKS_SERVICE_URL = "http://localhost:8071";
+    final private String USERS_SERVICE_URL = "http://localhost:8072";
 
     private String gatewayToken = "";
     private String booksToken = "";
@@ -73,29 +72,29 @@ public class GatewayServiceImpl implements GatewayService {
     @Override
     public String getUsers() throws IOException{
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-        HttpGet request = new HttpGet(usersServiceUrl + "/users/");
-        HttpResponse response = authAndExecute(usersServiceUrl, request, usersToken);
+        HttpGet request = new HttpGet(USERS_SERVICE_URL + "/users/");
+        HttpResponse response = authAndExecute(USERS_SERVICE_URL, request, usersToken);
 
         return EntityUtils.toString(response.getEntity());
     }
 
     @Override
     public String getUserById(Long userId) throws IOException {
-        HttpGet request = new HttpGet(usersServiceUrl + "/users/" + userId);
-        HttpResponse response = authAndExecute(usersServiceUrl, request, usersToken);
+        HttpGet request = new HttpGet(USERS_SERVICE_URL + "/users/" + userId);
+        HttpResponse response = authAndExecute(USERS_SERVICE_URL, request, usersToken);
 
         return EntityUtils.toString(response.getEntity());
     }
 
     @Override
     public void deleteUser(Long userId) throws IOException{
-        HttpDelete request = new HttpDelete(usersServiceUrl + "/users/" + userId);
-        authAndExecute(usersServiceUrl, request, usersToken);
+        HttpDelete request = new HttpDelete(USERS_SERVICE_URL + "/users/" + userId);
+        authAndExecute(USERS_SERVICE_URL, request, usersToken);
     }
 
     @Override
     public String getReviewsByUser(Long userId) throws IOException {
-        String url = reviewsServiceUrl + "/reviews/byuser/" + userId;
+        String url = REVIEWS_SERVICE_URL + "/reviews/byuser/" + userId;
         URL website = new URL(url);
         URLConnection connection = website.openConnection();
         BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
@@ -113,8 +112,8 @@ public class GatewayServiceImpl implements GatewayService {
 
     @Override
     public ResponseEntity getBooksWithReviews() throws IOException, JSONException{
-        HttpGet request = new HttpGet(booksServiceUrl + "/books");
-        HttpResponse response = authAndExecute(booksServiceUrl, request, booksToken);
+        HttpGet request = new HttpGet(BOOKS_SERVICE_URL + "/books");
+        HttpResponse response = authAndExecute(BOOKS_SERVICE_URL, request, booksToken);
 
         if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
             return ResponseEntity.status(response.getStatusLine().getStatusCode())
@@ -128,8 +127,8 @@ public class GatewayServiceImpl implements GatewayService {
             JSONObject obj = books.getJSONObject(i);
             String sfname = obj.getString("id");
 
-            HttpGet request2 = new HttpGet(reviewsServiceUrl + "/reviews/bybook/" + sfname);
-            HttpResponse response2 = authAndExecute(reviewsServiceUrl, request2, reviewsToken);
+            HttpGet request2 = new HttpGet(REVIEWS_SERVICE_URL + "/reviews/bybook/" + sfname);
+            HttpResponse response2 = authAndExecute(REVIEWS_SERVICE_URL, request2, reviewsToken);
 
             StringBuilder responseStr = new StringBuilder();
             responseStr.append(obj);
@@ -154,63 +153,137 @@ public class GatewayServiceImpl implements GatewayService {
 
     @Override
     public void addUser(String user) throws IOException{
-        HttpPost request = new HttpPost(usersServiceUrl + "/users");
+        HttpPost request = new HttpPost(USERS_SERVICE_URL + "/users");
         StringEntity params = new StringEntity(user);
         request.addHeader("content-type", "application/json");
         request.setEntity(params);
-        authAndExecute(usersServiceUrl, request, usersToken);
+        authAndExecute(USERS_SERVICE_URL, request, usersToken);
     }
 
 
+    // Откат
     @Override
-    public void createReview(String review) throws IOException{
-        try{
-            HttpPost request = new HttpPost(reviewsServiceUrl + "/reviews");
-            StringEntity params = new StringEntity(review, "UTF-8");
-            request.addHeader("content-type", "application/json");
-            request.setEntity(params);
-            authAndExecute(reviewsServiceUrl, request, reviewsToken);
+    public ResponseEntity createReview(String review) throws IOException {
 
-            JSONObject obj = new JSONObject(review);
-            long bookId = obj.getLong("bookId");
-            request = new HttpPost(booksServiceUrl + "/books/" + bookId + "/add_review");
-            authAndExecute(booksServiceUrl, request, booksToken);
+        JSONObject result = new JSONObject();
 
-            HttpGet request2 = new HttpGet(reviewsServiceUrl + "/reviews/bybook/" + bookId);
-            HttpResponse response2 = authAndExecute(reviewsServiceUrl, request2, reviewsToken);
-            String responseString2 = EntityUtils.toString(response2.getEntity(), "UTF-8");
-            JSONArray revsArray = new JSONArray(responseString2);
-            double rating = 0;
-            for (int i = 0; i < revsArray.length(); i++){
-                rating += revsArray.getJSONObject(i).getDouble("rating");
+        try {
+            JSONObject reviewJson = new JSONObject(review);
+            double reviewRating = reviewJson.getDouble("rating");
+            if (Math.abs(reviewRating) < 1 || reviewRating > 5){
+                result.put("error", invalidFieldError("rating"));
+                return ResponseEntity.status(HttpStatus.SC_BAD_REQUEST).body(result.toString());
             }
-            double averageRating = rating/revsArray.length();
-
-            HttpPost request3 = new HttpPost(booksServiceUrl + "/books/" + bookId +"/setRating/" + String.valueOf(averageRating));
-            authAndExecute(booksServiceUrl, request3, booksToken);
-        } catch (Exception ex) {
-            // обработка исключения
+        } catch (JSONException ex){
+            return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).body(jsonParsingError());
         }
+
+        HttpPost request = new HttpPost(REVIEWS_SERVICE_URL + "/reviews");
+        StringEntity params = new StringEntity(review, "UTF-8");
+        request.addHeader("content-type", "application/json");
+        request.setEntity(params);
+        HttpResponse response = authAndExecute(REVIEWS_SERVICE_URL, request, reviewsToken);
+        if (response.getStatusLine().getStatusCode() != 200){
+            return ResponseEntity.status(response.getStatusLine().getStatusCode()).body(response.getStatusLine().getReasonPhrase());
+        }
+
+        String createdReviewId = EntityUtils.toString(response.getEntity());
+        HttpDelete requestRollBack = new HttpDelete(REVIEWS_SERVICE_URL + "/reviews/" + createdReviewId);
+
+        long bookId;
+        try {
+            JSONObject obj = new JSONObject(review);
+            bookId = obj.getLong("bookId");
+        } catch (JSONException ex){
+            logger.error(jsonParsingError(), ex);
+            return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).body(jsonParsingError());
+        }
+
+        request = new HttpPost(BOOKS_SERVICE_URL + "/books/" + bookId + "/add_review");
+
+        HttpResponse response1 = authAndExecute(BOOKS_SERVICE_URL, request, booksToken);
+        if (response1.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
+            HttpResponse responseRollBack = authAndExecute(REVIEWS_SERVICE_URL, requestRollBack, reviewsToken);
+
+            return ResponseEntity.status(response1.getStatusLine().getStatusCode())
+                    .body(response1.getStatusLine().getReasonPhrase());
+        }
+        HttpPost requestRollBack2 = new HttpPost(BOOKS_SERVICE_URL + "/books/" + bookId + "/delete_review");
+
+        HttpGet request2 = new HttpGet(REVIEWS_SERVICE_URL + "/reviews/bybook/" + bookId);
+        HttpResponse response2 = authAndExecute(REVIEWS_SERVICE_URL, request2, reviewsToken);
+        if (response2.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
+            HttpResponse responseRollBack = authAndExecute(REVIEWS_SERVICE_URL, requestRollBack, reviewsToken);
+            HttpResponse responseRollBack2 = authAndExecute(BOOKS_SERVICE_URL, requestRollBack2, booksToken);
+
+            return ResponseEntity.status(response2.getStatusLine().getStatusCode())
+                    .body(response2.getStatusLine().getReasonPhrase());
+        }
+
+        double averageRating;
+        try {
+            averageRating = recalcAverageRating(response2);
+        } catch (JSONException ex){
+            logger.error(jsonParsingError(), ex);
+            return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).body(jsonParsingError());
+        }
+
+
+        HttpPost request3 = new HttpPost(BOOKS_SERVICE_URL + "/books/" + bookId +"/setRating/" + String.valueOf(averageRating));
+        HttpResponse response3 = authAndExecute(BOOKS_SERVICE_URL, request3, booksToken);
+        if (response3.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
+            HttpResponse responseRollBack = authAndExecute(REVIEWS_SERVICE_URL, requestRollBack, reviewsToken);
+            HttpResponse responseRollBack2 =  authAndExecute(BOOKS_SERVICE_URL, requestRollBack2, booksToken);
+            HttpResponse responseRollBack3 = authAndExecute(REVIEWS_SERVICE_URL, request2, reviewsToken);
+
+            double averageRatingRollback;
+            try {
+                averageRatingRollback = recalcAverageRating(responseRollBack3);
+            } catch (JSONException e) {
+                logger.error(jsonParsingError(), e);
+                return  ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).body(jsonParsingError());
+            }
+
+            HttpPost requestRollback4 = new HttpPost(BOOKS_SERVICE_URL + "/books/" + bookId +"/setRating/" + String.valueOf(averageRatingRollback));
+            HttpResponse responseRollback4 = authAndExecute(BOOKS_SERVICE_URL, requestRollback4, booksToken);
+        }
+
+        try {
+            result.put("id", createdReviewId);
+        } catch (JSONException e) {
+            logger.error(jsonParsingError());
+        }
+        return ResponseEntity.ok(result);
+    }
+
+    private double recalcAverageRating(HttpResponse response) throws IOException, JSONException {
+        String responseString2 = EntityUtils.toString(response.getEntity(), "UTF-8");
+        JSONArray revsArray = new JSONArray(responseString2);
+        double rating = 0;
+        for (int i = 0; i < revsArray.length(); i++) {
+            rating += revsArray.getJSONObject(i).getDouble("rating");
+        }
+        return rating / revsArray.length();
     }
 
     @Override
     public void deleteReview(Long reviewId){
         try{
-            HttpGet request = new HttpGet(reviewsServiceUrl + "/reviews/" + reviewId);
-            HttpResponse response = authAndExecute(reviewsServiceUrl, request, reviewsToken);
+            HttpGet request = new HttpGet(REVIEWS_SERVICE_URL + "/reviews/" + reviewId);
+            HttpResponse response = authAndExecute(REVIEWS_SERVICE_URL, request, reviewsToken);
 
             String book = EntityUtils.toString(response.getEntity(), "UTF-8");
             JSONObject obj = new JSONObject(book);
             Long bookId = obj.getLong("bookId");
 
-            HttpDelete request1 = new HttpDelete(reviewsServiceUrl + "/reviews/" + reviewId);
-            authAndExecute(reviewsServiceUrl, request1, reviewsToken);
+            HttpDelete request1 = new HttpDelete(REVIEWS_SERVICE_URL + "/reviews/" + reviewId);
+            authAndExecute(REVIEWS_SERVICE_URL, request1, reviewsToken);
 
-            HttpPost request3 = new HttpPost(booksServiceUrl + "/books/" + bookId + "/delete_review");
-            authAndExecute(booksServiceUrl, request3, booksToken);
+            HttpPost request3 = new HttpPost(BOOKS_SERVICE_URL + "/books/" + bookId + "/delete_review");
+            authAndExecute(BOOKS_SERVICE_URL, request3, booksToken);
 
-            HttpGet request2 = new HttpGet(reviewsServiceUrl + "/reviews/bybook/" + bookId);
-            HttpResponse response2 = authAndExecute(reviewsServiceUrl, request2, reviewsToken);
+            HttpGet request2 = new HttpGet(REVIEWS_SERVICE_URL + "/reviews/bybook/" + bookId);
+            HttpResponse response2 = authAndExecute(REVIEWS_SERVICE_URL, request2, reviewsToken);
             String responseString2 = EntityUtils.toString(response2.getEntity(), "UTF-8");
             JSONArray revsArray = new JSONArray(responseString2);
             double rating = 0;
@@ -219,8 +292,8 @@ public class GatewayServiceImpl implements GatewayService {
             }
             double averageRating = rating/revsArray.length();
 
-            HttpPost request4 = new HttpPost(booksServiceUrl + "/books/" + bookId +"/setRating/" + averageRating);
-            authAndExecute(booksServiceUrl, request4, booksToken);
+            HttpPost request4 = new HttpPost(BOOKS_SERVICE_URL + "/books/" + bookId +"/setRating/" + averageRating);
+            authAndExecute(BOOKS_SERVICE_URL, request4, booksToken);
         } catch (Exception ex) {
             // обработка исключения
         }
@@ -229,17 +302,17 @@ public class GatewayServiceImpl implements GatewayService {
 
     @Override
     public String getReviewsForBook(Long bookId, PageRequest p) throws IOException{
-        HttpGet request = new HttpGet(reviewsServiceUrl +"/reviews/bybook/"+ bookId +
+        HttpGet request = new HttpGet(REVIEWS_SERVICE_URL +"/reviews/bybook/"+ bookId +
                 "?page=" + p.getPageNumber() + "&size=" + p.getPageSize());
-        HttpResponse response = authAndExecute(reviewsServiceUrl, request, reviewsToken);
+        HttpResponse response = authAndExecute(REVIEWS_SERVICE_URL, request, reviewsToken);
 
         return EntityUtils.toString(response.getEntity());
     }
 
     @Override
     public String getBookById(@PathVariable Long bookId) throws IOException{
-        HttpGet request = new HttpGet(booksServiceUrl + "/book/" + bookId);
-        HttpResponse response = authAndExecute(booksServiceUrl, request, booksToken);
+        HttpGet request = new HttpGet(BOOKS_SERVICE_URL + "/book/" + bookId);
+        HttpResponse response = authAndExecute(BOOKS_SERVICE_URL, request, booksToken);
 
         return EntityUtils.toString(response.getEntity());
     }
@@ -366,4 +439,11 @@ public class GatewayServiceImpl implements GatewayService {
         return EntityUtils.toString(response.getEntity());
     }
 
+    static private String invalidFieldError(String field){
+        return "Invalid field " + field;
+    }
+
+    static private String jsonParsingError(){
+        return "Error parsing json";
+    }
 }
