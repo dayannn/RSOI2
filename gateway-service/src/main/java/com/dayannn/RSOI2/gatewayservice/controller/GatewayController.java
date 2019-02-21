@@ -160,8 +160,7 @@ public class GatewayController {
                     .body(EntityUtils.toString(response.getEntity()));
         }
 
-        gatewayService.deleteReview(reviewId);
-        return ResponseEntity.ok("");
+        return gatewayService.deleteReview(reviewId);
     }
 
     @PostMapping(path = "/login", produces = MediaType.APPLICATION_JSON_VALUE)

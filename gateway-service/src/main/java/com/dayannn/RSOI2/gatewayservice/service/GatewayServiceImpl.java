@@ -51,7 +51,7 @@ public class GatewayServiceImpl implements GatewayService {
 
     private Jedis jedis = new Jedis("127.0.0.1", 6379);
     private JedisManager jedisManager = new JedisManager(jedis);
-    //private WorkThread workThread = new WorkThread(jedis);
+    private WorkThread workThread = new WorkThread(jedis);
 
     private HttpResponseFactory responseFactory= new DefaultHttpResponseFactory();
 
@@ -62,7 +62,7 @@ public class GatewayServiceImpl implements GatewayService {
     private String clientSecret;
 
     public GatewayServiceImpl() {
-        //workThread.start();
+        workThread.start();
     }
 
     public String getGatewayToken() {
@@ -209,6 +209,9 @@ public class GatewayServiceImpl implements GatewayService {
         HttpResponse response1 = authAndExecute(BOOKS_SERVICE_URL, request, booksToken);
         if (response1.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
             HttpResponse responseRollBack = authAndExecute(REVIEWS_SERVICE_URL, requestRollBack, reviewsToken);
+            if (responseRollBack.getStatusLine().getStatusCode() != 200){
+                logger.error(errorRollingBack());
+            }
 
             return ResponseEntity.status(response1.getStatusLine().getStatusCode())
                     .body(EntityUtils.toString(response1.getEntity()));
@@ -220,6 +223,9 @@ public class GatewayServiceImpl implements GatewayService {
         if (response2.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
             HttpResponse responseRollBack = authAndExecute(REVIEWS_SERVICE_URL, requestRollBack, reviewsToken);
             HttpResponse responseRollBack2 = authAndExecute(BOOKS_SERVICE_URL, requestRollBack2, booksToken);
+            if (responseRollBack.getStatusLine().getStatusCode() != 200 || responseRollBack2.getStatusLine().getStatusCode() != 200){
+                logger.error(errorRollingBack());
+            }
 
             return ResponseEntity.status(response2.getStatusLine().getStatusCode())
                     .body(EntityUtils.toString(response2.getEntity()));
@@ -251,6 +257,12 @@ public class GatewayServiceImpl implements GatewayService {
 
             HttpPost requestRollback4 = new HttpPost(BOOKS_SERVICE_URL + "/books/" + bookId +"/setRating/" + String.valueOf(averageRatingRollback));
             HttpResponse responseRollback4 = authAndExecute(BOOKS_SERVICE_URL, requestRollback4, booksToken);
+            if (responseRollBack.getStatusLine().getStatusCode() != 200
+                    || responseRollBack2.getStatusLine().getStatusCode() != 200
+                    || responseRollBack3.getStatusLine().getStatusCode() != 200
+                    || responseRollback4.getStatusLine().getStatusCode() != 200){
+                logger.error(errorRollingBack());
+            }
 
             return ResponseEntity.status(response3.getStatusLine().getStatusCode())
                     .body(EntityUtils.toString(response3.getEntity()));
@@ -277,36 +289,78 @@ public class GatewayServiceImpl implements GatewayService {
 
     // Очередь
     @Override
-    public void deleteReview(Long reviewId){
-        try{
+    public ResponseEntity deleteReview(Long reviewId) throws IOException {
+        long bookId;
+        double newAverageRating;
+        try {
             HttpGet request = new HttpGet(REVIEWS_SERVICE_URL + "/reviews/" + reviewId);
             HttpResponse response = authAndExecute(REVIEWS_SERVICE_URL, request, reviewsToken);
 
+            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
+                return ResponseEntity.status(response.getStatusLine().getStatusCode())
+                        .body(EntityUtils.toString(response.getEntity()));
+            }
+
             String book = EntityUtils.toString(response.getEntity(), "UTF-8");
             JSONObject obj = new JSONObject(book);
-            Long bookId = obj.getLong("bookId");
-
-            HttpDelete request1 = new HttpDelete(REVIEWS_SERVICE_URL + "/reviews/" + reviewId);
-            authAndExecute(REVIEWS_SERVICE_URL, request1, reviewsToken);
-
-            HttpPost request3 = new HttpPost(BOOKS_SERVICE_URL + "/books/" + bookId + "/delete_review");
-            authAndExecute(BOOKS_SERVICE_URL, request3, booksToken);
+            bookId = obj.getLong("bookId");
 
             HttpGet request2 = new HttpGet(REVIEWS_SERVICE_URL + "/reviews/bybook/" + bookId);
             HttpResponse response2 = authAndExecute(REVIEWS_SERVICE_URL, request2, reviewsToken);
+            if (response2.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
+                return ResponseEntity.status(response2.getStatusLine().getStatusCode())
+                        .body(EntityUtils.toString(response2.getEntity()));
+            }
+
             String responseString2 = EntityUtils.toString(response2.getEntity(), "UTF-8");
             JSONArray revsArray = new JSONArray(responseString2);
             double rating = 0;
-            for (int i = 0; i < revsArray.length(); i++){
+            for (int i = 0; i < revsArray.length(); i++) {
                 rating += revsArray.getJSONObject(i).getDouble("rating");
             }
-            double averageRating = rating/revsArray.length();
 
-            HttpPost request4 = new HttpPost(BOOKS_SERVICE_URL + "/books/" + bookId +"/setRating/" + averageRating);
-            authAndExecute(BOOKS_SERVICE_URL, request4, booksToken);
-        } catch (Exception ex) {
-            // обработка исключения
+            rating -= obj.getDouble("rating");
+            newAverageRating = revsArray.length() - 1 == 0 ? 0 : rating / (revsArray.length() - 1);
         }
+        catch (JSONException e) {
+            logger.error(jsonParsingError());
+            return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).body(jsonParsingError());
+        }
+
+        HttpDelete request1 = new HttpDelete(REVIEWS_SERVICE_URL + "/reviews/" + reviewId);
+        HttpResponse response1 = authAndExecute(REVIEWS_SERVICE_URL, request1, reviewsToken);
+        if (response1.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
+            logger.info("Queueing request " + request1.getRequestLine() +
+                    ", status= " + response1.getStatusLine().getStatusCode() +
+                    ", message= " + response1.getStatusLine().getReasonPhrase());
+            jedisManager.addReqToQueue("DELETE", request1,
+                    Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes()),
+                    REVIEWS_SERVICE_URL);
+        }
+
+        HttpPost request3 = new HttpPost(BOOKS_SERVICE_URL + "/books/" + bookId + "/delete_review");
+        HttpResponse response3 = authAndExecute(BOOKS_SERVICE_URL, request3, booksToken);
+        if (response3.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
+            logger.info("Queueing request " + request3.getRequestLine() +
+                    ", status= " + response3.getStatusLine().getStatusCode() +
+                    ", message= " + response3.getStatusLine().getReasonPhrase());
+            jedisManager.addReqToQueue("POST", request3,
+                    Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes()),
+                    BOOKS_SERVICE_URL);
+        }
+
+        HttpPost request4 = new HttpPost(BOOKS_SERVICE_URL + "/books/" + bookId +"/setRating/" + newAverageRating);
+        HttpResponse response4 = authAndExecute(BOOKS_SERVICE_URL, request4, booksToken);
+        if (response4.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
+            logger.info("Queueing request " + request4.getRequestLine() +
+                    ", status= " + response4.getStatusLine().getStatusCode() +
+                    ", message= " + response4.getStatusLine().getReasonPhrase());
+            jedisManager.addReqToQueue("POST", request4,
+                    Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes()),
+                    BOOKS_SERVICE_URL);
+        }
+
+        return ResponseEntity.ok("");
     }
 
 
@@ -455,5 +509,13 @@ public class GatewayServiceImpl implements GatewayService {
 
     static private String jsonParsingError(){
         return "Error parsing json";
+    }
+
+    static private String errorRollingBack(){
+        return "Error rolling back transaction";
+    }
+
+    static private String errorProcessingRequest(){
+        return "Error processing request ";
     }
 }

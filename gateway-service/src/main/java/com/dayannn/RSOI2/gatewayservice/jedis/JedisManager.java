@@ -23,7 +23,7 @@ public class JedisManager {
         this.setBlockingQueue(j);
     }
 
-    public void addReqToQueue(String reqType, HttpRequest req, String cred, String authUrl){
+    public void addReqToQueue(String reqType, HttpRequest req, String cred, String authUrl) {
         JSONObject requestJson = new JSONObject();
 
         if (!Arrays.asList("GET", "POST", "PUT", "DELETE").contains(reqType)) {
@@ -38,16 +38,16 @@ public class JedisManager {
             requestJson.put("cred", cred);
             requestJson.put("auth_url", authUrl);
 
-            switch (reqType){
-                case "POST":
-                    requestJson.put("body", EntityUtils.toString(  ((HttpPost)req).getEntity() ));
-                    break;
-                case "PUT":
-                    requestJson.put("body", EntityUtils.toString(  ((HttpPut)req).getEntity() ));
-                    break;
-            }
+//            switch (reqType) {
+//                case "POST":
+//                    requestJson.put("body", EntityUtils.toString(((HttpPost) req).getEntity()));
+//                    break;
+//                case "PUT":
+//                    requestJson.put("body", EntityUtils.toString(((HttpPut) req).getEntity()));
+//                    break;
+//            }
         } catch (Exception e) {
-            logger.error("Error adding request to jedis queue", e);
+            logger.error("Error adding request to jedis queue ", e);
         }
 
         blockingQueue.lpush("work", requestJson.toString());

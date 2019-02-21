@@ -29,13 +29,16 @@ public class WorkThread implements Runnable {
     }
 
     public void run() {
-        while(queue.exists("work")) {
+        while (queue.exists("work")) {
             JSONObject req = null;
             try {
                 req = new JSONObject(queue.rpop("work"));
             } catch (JSONException e) {
                 logger.error("Error parsing request from queue ", e);
+                return;
             }
+
+            logger.info("Trying to execute request from queue " + req);
 
             CloseableHttpResponse httpResponse;
             try {
@@ -49,15 +52,18 @@ public class WorkThread implements Runnable {
                         break;
                     case ("POST"):
                         requestBase = new HttpPost(url);
-                        ((HttpPost)requestBase).setEntity(new StringEntity(req.getString("body")));
+                       // ((HttpPost) requestBase).setEntity(new StringEntity(req.getString("body")));
                         break;
                     case ("PUT"):
                         requestBase = new HttpPut(url);
-                        ((HttpPut)requestBase).setEntity(new StringEntity(req.getString("body")));
+                       // ((HttpPut) requestBase).setEntity(new StringEntity(req.getString("body")));
                         break;
                     case ("DELETE"):
                         requestBase = new HttpDelete(url);
                         break;
+                    default:
+                        logger.warn("Unknown request type: ", req.getString("req_type"));
+                        return;
                 }
                 requestBase.addHeader("content-type", "application/json");
                 requestBase.addHeader("Authorization", "Bearer " + req.getString("token"));
@@ -65,7 +71,6 @@ public class WorkThread implements Runnable {
                 httpResponse = httpClient.execute(requestBase);
                 if (httpResponse.getStatusLine().getStatusCode() == 401 || httpResponse.getStatusLine().getStatusCode() == 403) {
                     String t = this.askToken(req.getString("auth_url"), req.getString("cred"));
-                    System.out.println("new token: " + t);
                     requestBase.removeHeaders("Authorization");
                     requestBase.addHeader("Authorization", "Bearer " + t);
                     req.remove("token");
@@ -74,15 +79,19 @@ public class WorkThread implements Runnable {
                     queue.lpush("work", req.toString());
                     try {
                         Thread.sleep(TIMEOUT_SECONDS * 1000);
-                    } catch (InterruptedException ignored) { }
+                    } catch (InterruptedException ignored) {
+                    }
                 }
 
             } catch (Exception e) {
-                System.out.println("Service unavailable, added to queue again");
+                logger.warn("Error executing request ", e);
                 queue.lpush("work", req.toString());
                 try {
                     Thread.sleep(TIMEOUT_SECONDS * 1000);
-                } catch (InterruptedException ignored) { }
+                } catch (InterruptedException ignored) {
+                    this.thread.interrupt();
+                    logger.error("Sleep interrupted ", e);
+                }
             }
 
         }
@@ -99,6 +108,7 @@ public class WorkThread implements Runnable {
             JSONObject p = new JSONObject(EntityUtils.toString(hr.getEntity()));
             t = p.getString("access_token");
         } catch (Exception e) {
+            logger.error("Error asking token in Work Thread ", e);
             t = "";
         }
         return t;
