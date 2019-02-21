@@ -336,6 +336,7 @@ public class GatewayServiceImpl implements GatewayService {
             jedisManager.addReqToQueue("DELETE", request1,
                     Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes()),
                     REVIEWS_SERVICE_URL);
+            workThread.run();
         }
 
         HttpPost request3 = new HttpPost(BOOKS_SERVICE_URL + "/books/" + bookId + "/delete_review");
@@ -347,6 +348,7 @@ public class GatewayServiceImpl implements GatewayService {
             jedisManager.addReqToQueue("POST", request3,
                     Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes()),
                     BOOKS_SERVICE_URL);
+            workThread.run();
         }
 
         HttpPost request4 = new HttpPost(BOOKS_SERVICE_URL + "/books/" + bookId +"/setRating/" + newAverageRating);
@@ -358,6 +360,7 @@ public class GatewayServiceImpl implements GatewayService {
             jedisManager.addReqToQueue("POST", request4,
                     Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes()),
                     BOOKS_SERVICE_URL);
+            workThread.run();
         }
 
         return ResponseEntity.ok("");
