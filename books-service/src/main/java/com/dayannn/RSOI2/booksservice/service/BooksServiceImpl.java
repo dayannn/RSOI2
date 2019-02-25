@@ -4,6 +4,7 @@ import com.dayannn.RSOI2.booksservice.entity.Book;
 import com.dayannn.RSOI2.booksservice.exception.BookNotFoundException;
 import com.dayannn.RSOI2.booksservice.repository.BooksRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -27,8 +28,6 @@ public class BooksServiceImpl implements BooksService {
     public void createBook(Book book) {
         booksRepository.save(book);
     }
-
-
 
     @Override
     public void setReviewsNum(Long id, int reviewsNum) throws BookNotFoundException {
@@ -74,4 +73,11 @@ public class BooksServiceImpl implements BooksService {
         return booksRepository.findById(id)
                 .orElseThrow(() -> new BookNotFoundException(id));
     }
+
+    @Override
+    public ResponseEntity healthCheck() {
+        return ResponseEntity.ok("The booksService is up");
+    }
+
+
 }

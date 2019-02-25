@@ -4,6 +4,7 @@ import com.dayannn.RSOI2.usersservice.entity.User;
 import com.dayannn.RSOI2.usersservice.exception.UserNotFoundException;
 import com.dayannn.RSOI2.usersservice.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -91,5 +92,10 @@ public class UsersServiceImpl implements UsersService{
         User user = usersRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
         usersRepository.save(user);
+    }
+
+    @Override
+    public ResponseEntity healthCheck() {
+        return ResponseEntity.ok("The usersService is up");
     }
 }
